@@ -2,7 +2,7 @@ import React from "react";
 import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
 import { useState } from "react";
-import { Collapse } from "antd";
+import { Button, Collapse } from "antd";
 import { CaretRightOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import SidebarCourseDetail from "../components/course/SidebarCourseDetail";
 function CourseDetails() {
@@ -100,7 +100,6 @@ function CourseDetails() {
   }));
   return (
     <>
-      <Header />
       <section className="py-16 bg-gray-50 mt-10">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap -mx-4">
@@ -123,17 +122,14 @@ function CourseDetails() {
                   laboris nisi ut aliquip ex ea commodo consequat. Duis aute
                   irure dolor in reprehenderit in voluptate velit esse cillum.
                 </div>
-                <div className="flex ">
+                <div className="flex">
                   <h4 className="text-2xl font-bold mt-8 mb-4 text-gray-800">
                     Noi dung khoa hoc
                   </h4>
 
-                  <button
-                    onClick={handleExpandAll}
-                    className="bg-orange-500 text-white rounded-lg"
-                  >
+                  <Button onClick={handleExpandAll} type="primary" className="mt-8 mb-4 ml-10">
                     Expand All
-                  </button>
+                  </Button>
                 </div>
                 <Collapse
                   activeKey={activeKeys}
@@ -154,7 +150,6 @@ function CourseDetails() {
           </div>
         </div>
       </section>
-      <Footer />
     </>
   );
 }

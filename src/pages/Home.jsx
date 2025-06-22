@@ -6,14 +6,12 @@ import Footer from "../components/common/Footer";
 import SpecialCourse from "../components/SpecialCourse";
 function Home() {
   return (
-    <div>
-      <Header />
+    <>
       <Banner />
       <Feature />
       <Learning />
       <SpecialCourse/>
-      <Footer />
-    </div>
+    </>
   );
 }
 

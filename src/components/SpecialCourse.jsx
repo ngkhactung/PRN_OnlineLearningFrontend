@@ -61,23 +61,23 @@ function SpecialCourse() {
                 className="w-full h-48 object-cover rounded-t-2xl"
               />
               <div className="p-6 space-y-4">
-                <a
-                  href="course-details.html"
+                <Link
+                  to="/courseDetail"
                   className="inline-block px-4 py-1 bg-orange-100 text-orange-500 rounded-full text-sm font-medium"
                 >
                   {course.category}
-                </a>
+                </Link>
                 <h4 className="text-2xl font-bold text-blue-950">
                   ${course.price}.00
                 </h4>
-                <a
-                  href="course-details.html"
+                <Link
+                  to="/courseDetail"
                   className="block hover:text-orange-500 transition-colors"
                 >
                   <h3 className="text-xl font-semibold text-blue-950">
                     {course.name}
                   </h3>
-                </a>
+                </Link>
                 <p className="text-gray-600">{course.description}</p>
               </div>
             </Link>

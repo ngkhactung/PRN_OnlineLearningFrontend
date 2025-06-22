@@ -1,4 +1,6 @@
+import { Button } from "antd";
 import React from "react";
+import { Link } from "react-router-dom";
 
 function SidebarCourseDetail() {
   return (
@@ -30,9 +32,9 @@ function SidebarCourseDetail() {
               </span>
             </li>
           </ul>
-          <button className="w-full mt-6 px-6 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-500 hover:scale-105 transition-all ease-in-out">
+          <Button type="primary" to="/courseLearning" className="w-full mt-6 px-6 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-500 hover:scale-105 transition-all ease-in-out">
             Enroll the course
-          </button>
+          </Button>
         </div>
       </div>
     </div>
