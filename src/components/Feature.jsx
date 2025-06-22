@@ -15,12 +15,7 @@ function Feature() {
                 Set have great you male grass yielding an yielding first their
                 you're have called the abundantly fruit were man
               </p>
-              <a 
-                href="#" 
-                className="inline-block px-8 py-3 bg-orange-500 text-white rounded-lg hover:scale-105 hover:shadow-lg transition-all duration-300 ease-in-out"
-              >
-                Read More
-              </a>
+              
             </div>
           </div>
 

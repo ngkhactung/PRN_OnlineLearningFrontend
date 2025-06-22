@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, Link } from "react-router-dom";
-
+import logo from "../../assets/img/logo.png";
 function Header() {
   return (
     <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50 ">
@@ -10,7 +10,7 @@ function Header() {
           <div className="flex-shrink-0">
             <a href="index.html" className="flex items-center">
               <img
-                src="img/logo.png"
+                src={logo}
                 alt="logo"
                 className="h-8 lg:h-10 w-auto"
               />

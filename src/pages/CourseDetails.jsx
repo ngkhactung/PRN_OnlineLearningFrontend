@@ -1,12 +1,26 @@
-import React from "react";
-import Header from "../components/common/Header";
-import Footer from "../components/common/Footer";
-import { useState } from "react";
+import React, {useState, useEffect} from "react";
 import { Button, Collapse } from "antd";
 import { CaretRightOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import SidebarCourseDetail from "../components/course/SidebarCourseDetail";
+import { useParams } from "react-router-dom";
 function CourseDetails() {
   const [activeKeys, setActiveKeys] = useState(["1"]);
+
+  // call API to fetch data
+  const [course, setCourse] = useState(null);
+  const {id} = useParams();
+  useEffect(() => {
+    fetch(`https://localhost:5000/api/courses/${id}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          setCourse(json.data);
+        } else {
+          console.error("API returned failure:", json.message);
+        }
+      })
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
 
   const courseData = {
     title: "Nội dung khóa học",
@@ -98,36 +112,29 @@ function CourseDetails() {
         </div>
       ),
   }));
+  if (!course) return <p>Loading...</p>;
   return (
     <>
-      <section className="py-16 bg-gray-50 mt-10">
+      <section className="py-16 mt-10">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap -mx-4">
             {/* Left Column */}
             <div className="w-full lg:w-2/3 px-4">
               <div className="bg-white rounded-lg shadow-md p-8">
-                <h4 className="text-2xl font-bold mb-4 text-gray-800">Title</h4>
+                <h4 className="text-2xl font-bold mb-4 text-gray-800">{course?.courseName}</h4>
                 <div className="text-gray-600 space-y-4">
-                  Description
-                  <br />
-                  <br />
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                  laboris nisi ut aliquip ex ea commodoconsequat. Duis aute
-                  irure dolor in reprehenderit in voluptate velit esse cillum.
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                  irure dolor in reprehenderit in voluptate velit esse cillum.
+                  {course.description}
                 </div>
-                <div className="flex">
+                <div className="flex justify-between">
                   <h4 className="text-2xl font-bold mt-8 mb-4 text-gray-800">
                     Noi dung khoa hoc
                   </h4>
 
-                  <Button onClick={handleExpandAll} type="primary" className="mt-8 mb-4 ml-10">
+                  <Button
+                    onClick={handleExpandAll}
+                    type="primary"
+                    className="mt-8 mb-4 ml-10"
+                  >
                     Expand All
                   </Button>
                 </div>
@@ -146,7 +153,7 @@ function CourseDetails() {
                 />
               </div>
             </div>
-            <SidebarCourseDetail />
+            <SidebarCourseDetail course={course}/>
           </div>
         </div>
       </section>
