@@ -1,5 +1,5 @@
 import React from "react";
-
+import { Laugh, ShieldCheck, PartyPopper } from "lucide-react";
 function Feature() {
   return (
     <section className="py-20 bg-gray-50">
@@ -15,7 +15,6 @@ function Feature() {
                 Set have great you male grass yielding an yielding first their
                 you're have called the abundantly fruit were man
               </p>
-              
             </div>
           </div>
 
@@ -23,12 +22,14 @@ function Feature() {
           <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="space-y-4">
               <span className="inline-block p-4 bg-orange-100 text-orange-500 rounded-lg">
-                <i className="ti-layers text-2xl"></i>
+                <Laugh />
               </span>
-              <h4 className="text-xl font-semibold text-blue-950">Better Future</h4>
+              <h4 className="text-xl font-semibold text-blue-950">
+                Better Future
+              </h4>
               <p className="text-gray-600">
-                Set have great you male grasses yielding yielding first their
-                to called deep abundantly Set have great you male
+                Set have great you male grasses yielding yielding first their to
+                called deep abundantly Set have great you male
               </p>
             </div>
           </div>
@@ -36,12 +37,14 @@ function Feature() {
           <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="space-y-4">
               <span className="inline-block p-4 bg-orange-100 text-orange-500 rounded-lg">
-                <i className="ti-new-window text-2xl"></i>
+                <ShieldCheck />
               </span>
-              <h4 className="text-xl font-semibold text-blue-950">Qualified Trainers</h4>
+              <h4 className="text-xl font-semibold text-blue-950">
+                Qualified Trainers
+              </h4>
               <p className="text-gray-600">
-                Set have great you male grasses yielding yielding first their
-                to called deep abundantly Set have great you male
+                Set have great you male grasses yielding yielding first their to
+                called deep abundantly Set have great you male
               </p>
             </div>
           </div>
@@ -49,12 +52,14 @@ function Feature() {
           <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="space-y-4">
               <span className="inline-block p-4 bg-orange-100 text-orange-500 rounded-lg">
-                <i className="ti-light-bulb text-2xl"></i>
+                <PartyPopper />
               </span>
-              <h4 className="text-xl font-semibold text-blue-950">Job Oppurtunity</h4>
+              <h4 className="text-xl font-semibold text-blue-950">
+                Job Oppurtunity
+              </h4>
               <p className="text-gray-600">
-                Set have great you male grasses yielding yielding first their
-                to called deep abundantly Set have great you male
+                Set have great you male grasses yielding yielding first their to
+                called deep abundantly Set have great you male
               </p>
             </div>
           </div>

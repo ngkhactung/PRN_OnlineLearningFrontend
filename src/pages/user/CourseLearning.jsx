@@ -1,15 +1,12 @@
 import React from "react";
+import { Button, Layout, Menu, Avatar, Input, List } from "antd";
+const { Content, Sider } = Layout;
 import {
+  UserOutlined,
   LaptopOutlined,
   NotificationOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
-import { Breadcrumb, Button, Layout, Menu, theme } from "antd";
-const { Header, Content, Sider, Footer } = Layout;
-const items1 = ["<", "1", "2", "3"].map((key) => ({
-  key,
-  label: `nav ${key}`,
-}));
+
 const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
   (icon, index) => {
     const key = String(index + 1);
@@ -27,76 +24,67 @@ const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
     };
   }
 );
+const siderStyle = {
+  overflow: "auto",
+  height: "100vh",
+  position: "sticky",
+  insetInlineStart: 0,
+  top: 0,
+  bottom: 0,
+  backgroundColor: "#fff",
+  scrollbarWidth: "thin",
+  scrollbarGutter: "stable",
+};
+
 function CourseLearning() {
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
   return (
-    <Layout>
-      <Header style={{ display: "flex", alignItems: "center" }}>
-        <div className="flex-shrink-0">
-          <a href="index.html" className="flex items-center">
-            <img
-              src="img/logo.png"
-              alt="logo"
-              className="h-5 lg:h-5 w-auto mr-10"
-            />
-          </a>
+    <Layout hasSider>
+      {/* Main content trái */}
+      <Content className="flex-1 px-2 md:px-8 py-8">
+        <div className="max-w-3xl mx-auto">
+          {/* Video + tiêu đề */}
+          <div className="mb-6">
+            <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4 flex items-center justify-center">
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/8ud31ymkNT0?si=4jZb7gfQST2qyDr4"
+                title="YouTube video player"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            </div>
+            <h2 className="text-2xl font-bold mb-2">LessonName</h2>
+          </div>
+          {/* Bình luận hỏi đáp */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="font-semibold text-lg mb-4">Bình luận & Hỏi đáp</h3>
+
+            <div className="flex gap-2 mt-4">
+              <Input.TextArea
+                placeholder="Nhập bình luận hoặc câu hỏi..."
+                autoSize={{ minRows: 1, maxRows: 3 }}
+                className="flex-1"
+              />
+              <Button type="primary">Gửi</Button>
+            </div>
+          </div>
         </div>
+      </Content>
+      {/* Sidebar phải */}
+      <Sider>
         <Menu
-          theme="dark"
-          mode="horizontal"
-          defaultSelectedKeys={["2"]}
-          items={items1}
-          style={{ flex: 1, minWidth: 0 }}
+          theme="light"
+          mode="inline"
+          defaultSelectedKeys={["4"]}
+          items={items2}
+          style={siderStyle}
         />
-      </Header>
-      <Layout>
-        <Layout style={{ padding: "0 24px 24px" }}>
-          <Breadcrumb
-            items={[{ title: "Home" }, { title: "List" }, { title: "App" }]}
-            style={{ margin: "16px 0" }}
-          />
-          <Content
-            style={{
-              padding: 24,
-              margin: 0,
-              minHeight: 280,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}
-          >
-            <iframe
-              width="60%"
-              height="100%"
-              src="https://www.youtube.com/embed/8ud31ymkNT0?si=4jZb7gfQST2qyDr4"
-              title="YouTube video player"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerpolicy="strict-origin-when-cross-origin"
-              allowfullscreen
-            ></iframe>
-          </Content>
-        </Layout>
-        <Sider width={200} style={{ background: colorBgContainer }}>
-          <Menu
-            mode="inline"
-            defaultSelectedKeys={["1"]}
-            defaultOpenKeys={["sub1"]}
-            style={{ height: "100%", borderRight: 0 }}
-            items={items2}
-          />
-        </Sider>
-      </Layout>
-      <Footer style={{ textAlign: "center" }}>
-        <Button style={{ marginTop: "10px", marginRight: "10px" }}>
-          Bài trước đó{" "}
-        </Button>
-        <Button type="primary" style={{ marginTop: "10px" }}>
-          Bài tiếp theo{" "}
-        </Button>
-      </Footer>
+      </Sider>
     </Layout>
   );
 }
+
 export default CourseLearning;

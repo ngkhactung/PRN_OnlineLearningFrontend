@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function Learning() {
   return (
@@ -8,9 +9,9 @@ function Learning() {
           {/* Image Section */}
           <div className="w-full md:w-7/12 lg:w-7/12">
             <div className="relative">
-              <img 
-                src="img/learning_img.png" 
-                alt="Learning" 
+              <img
+                src="img/learning_img.png"
+                alt="Learning"
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>
@@ -30,7 +31,7 @@ function Learning() {
                 hath brind Days and beast greater grass signs abundantly have
                 greater also days years under brought moveth.
               </p>
-              
+
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 mt-1">
@@ -50,12 +51,13 @@ function Learning() {
                 </li>
               </ul>
 
-              <a 
-                href="#" 
+              <Link
+                to="/about"
+                href="#"
                 className="inline-block px-8 py-3 bg-orange-500 text-white rounded-lg hover:scale-105 hover:shadow-lg transition-all duration-300 ease-in-out"
               >
                 Read More
-              </a>
+              </Link>
             </div>
           </div>
         </div>

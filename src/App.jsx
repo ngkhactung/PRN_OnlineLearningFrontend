@@ -8,6 +8,7 @@ import Contact from "./pages/Contact.jsx";
 import MainLayout from "./components/layouts/MainLayout.jsx";
 import CourseLearning from "./pages/user/CourseLearning.jsx";
 import Otp from "./pages/auth/Otp.jsx";
+import LearningLayout from "./components/layouts/LearningLayout.jsx";
 function App() {
   return (
     <BrowserRouter>
@@ -21,7 +22,9 @@ function App() {
         </Route>
         <Route path="/auth" element={<Auth />} />
         <Route path="/otp" element={<Otp />} />
-        <Route path="/courseLearning" element={<CourseLearning />} />
+        <Route element={<LearningLayout />}>
+          <Route path="/courseLearning" element={<CourseLearning />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
