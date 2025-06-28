@@ -6,7 +6,7 @@ const { Header, Footer } = Layout;
 
 function LearningLayout() {
   return (
-    <Layout className="min-h-screen flex flex-col">
+    <Layout className="min-h-screen flex flex-col overflow-hidden">
       {/* Header cố định */}
       <div className="flex items-center justify-between px-6 sticky top-0 z-20 h-20 bg-cyan-900">
         <div className="flex items-center gap-4">
@@ -32,13 +32,9 @@ function LearningLayout() {
           <span className="font-semibold text-white">Tiến độ: 2/10 bài</span>
         </div>
       </div>
-      <Outlet />
+      <Outlet/>
 
-      {/* Footer cố định */}
-      <div className="fixed bottom-0 left-0 w-full bg-gray-100 shadow flex justify-center gap-4 py-4 z-30 mt-10">
-        <Button>Bài trước đó</Button>
-        <Button type="primary">Bài tiếp theo</Button>
-      </div>
+      
     </Layout>
   );
 }

@@ -1,88 +1,170 @@
-import React from "react";
-import { Button, Layout, Menu, Avatar, Input, List } from "antd";
-const { Content, Sider } = Layout;
-import {
-  UserOutlined,
-  LaptopOutlined,
-  NotificationOutlined,
-} from "@ant-design/icons";
-
-const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
-  (icon, index) => {
-    const key = String(index + 1);
-    return {
-      key: `sub${key}`,
-      icon: React.createElement(icon),
-      label: `subnav ${key}`,
-      children: Array.from({ length: 4 }).map((_, j) => {
-        const subKey = index * 4 + j + 1;
-        return {
-          key: subKey,
-          label: `option${subKey}`,
-        };
-      }),
-    };
-  }
-);
-const siderStyle = {
-  overflow: "auto",
-  height: "100vh",
-  position: "sticky",
-  insetInlineStart: 0,
-  top: 0,
-  bottom: 0,
-  backgroundColor: "#fff",
-  scrollbarWidth: "thin",
-  scrollbarGutter: "stable",
-};
+import { Layout, Menu, Button, Empty, Alert } from "antd";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import Learning from "../../components/course/Learning";
+const { Sider } = Layout;
 
 function CourseLearning() {
-  return (
-    <Layout hasSider>
-      {/* Main content trái */}
-      <Content className="flex-1 px-2 md:px-8 py-8">
-        <div className="max-w-3xl mx-auto">
-          {/* Video + tiêu đề */}
-          <div className="mb-6">
-            <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4 flex items-center justify-center">
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/8ud31ymkNT0?si=4jZb7gfQST2qyDr4"
-                title="YouTube video player"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-                className="w-full h-full"
-              ></iframe>
-            </div>
-            <h2 className="text-2xl font-bold mb-2">LessonName</h2>
-          </div>
-          {/* Bình luận hỏi đáp */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold text-lg mb-4">Bình luận & Hỏi đáp</h3>
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentLesson, setCurrentLesson] = useState(null);
+  const [error, setError] = useState(null);
+  const { courseId } = useParams();
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-            <div className="flex gap-2 mt-4">
-              <Input.TextArea
-                placeholder="Nhập bình luận hoặc câu hỏi..."
-                autoSize={{ minRows: 1, maxRows: 3 }}
-                className="flex-1"
-              />
-              <Button type="primary">Gửi</Button>
-            </div>
-          </div>
-        </div>
-      </Content>
-      {/* Sidebar phải */}
-      <Sider>
+  useEffect(() => {
+    if (courseId) {
+      fetch(`${baseURL}/courses/${courseId}`)
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success) {
+            setCourse(json.data);
+            // Kiểm tra xem course có modules và lessons không
+            if (json.data.modules && json.data.modules.length > 0) {
+              const firstModule = json.data.modules[0];
+              if (firstModule.lessons && firstModule.lessons.length > 0) {
+                setCurrentLesson(firstModule.lessons[0]);
+              } else {
+                setError("Khóa học này chưa có bài học nào.");
+              }
+            } else {
+              setError("Khóa học này chưa có module nào.");
+            }
+          } else {
+            setError(json.message || "Không thể tải thông tin khóa học.");
+          }
+        })
+        .catch((err) => {
+          console.error("Fetch error:", err);
+          setError("Lỗi kết nối. Vui lòng thử lại sau.");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [courseId]);
+
+  // Xử lý khi user click vào lesson trong menu
+  const handleLessonSelect = ({ key }) => {
+    if (!course || !course.modules) return;
+    
+    // Tìm lesson dựa trên key
+    for (const module of course.modules) {
+      const lesson = module.lessons.find(
+        (lesson) => lesson.lessonId.toString() === key
+      );
+      if (lesson) {
+        setCurrentLesson(lesson);
+        break;
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    console.log(error);
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Empty
+          message="Lỗi"
+          description={error}
+          type="error"
+          showIcon
+          className="max-w-md"
+        />
+      </div>
+    );
+  }
+
+  if (!course) {
+    console.log('Không tìm thấy khóa học');
+
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Alert
+          message="Không tìm thấy khóa học"
+          description="Khóa học bạn đang tìm kiếm không tồn tại."
+          type="warning"
+          showIcon
+          className="max-w-md"
+        />
+      </div>
+    );
+  }
+
+  // Kiểm tra xem course có modules và lessons không
+  const hasModules = course.modules && course.modules.length > 0;
+  const hasLessons = hasModules && course.modules.some(module => 
+    module.lessons && module.lessons.length > 0
+  );
+
+  if (!hasModules) {
+    console.log('Khóa học này chưa có nội dung');
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Empty
+          description="Khóa học này chưa có nội dung"
+        />
+      </div>
+    );
+  }
+
+  if (!hasLessons) {
+    console.log('Khóa học này chưa có bài học nào');
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Empty
+          description="Khóa học này chưa có bài học nào"
+        />
+      </div>
+    );
+  }
+
+  // Tạo menu items từ dữ liệu modules và lessons
+  const items = course.modules.map((module) => ({
+    key: `sub${module.moduleId}`,
+    label: module.moduleName,
+    children: module.lessons && module.lessons.length > 0 
+      ? module.lessons.map((lesson) => ({
+          key: lesson.lessonId.toString(),
+          label: lesson.lessonName,
+        }))
+      : [],
+  }));
+
+  return (
+    <Layout hasSider className="h-[calc(100vh-80px-64px)] overflow-hidden">
+      <Learning lesson={currentLesson} />
+      {/* <Quizzes /> */}
+      <Sider
+        width={300}
+        style={{
+          overflowY: "auto",
+          height: "100%",
+          backgroundColor: "#fff",
+          borderLeft: "1px solid #f0f0f0",
+        }}
+      >
         <Menu
           theme="light"
           mode="inline"
-          defaultSelectedKeys={["4"]}
-          items={items2}
-          style={siderStyle}
+          defaultSelectedKeys={
+            currentLesson ? [currentLesson.lessonId.toString()] : []
+          }
+          onSelect={handleLessonSelect}
+          items={items}
         />
       </Sider>
+      {/* Footer cố định */}
+      <div className="fixed bottom-0 left-0 w-full bg-gray-100 shadow flex justify-center gap-4 py-4 z-30 mt-10">
+        <Button>Bài trước đó</Button>
+        <Button type="primary">Bài tiếp theo</Button>
+      </div>
     </Layout>
   );
 }

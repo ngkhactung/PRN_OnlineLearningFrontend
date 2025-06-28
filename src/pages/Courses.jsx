@@ -1,10 +1,24 @@
-import React, { useState } from "react";
-import { Pagination, Select, Input } from "antd";
+import React, { useState, useEffect } from "react";
+import { Pagination, Select, Input, Empty } from "antd";
 import CourseItem from "../components/course/CourseItem";
 import SidebarCourseFilter from "../components/course/SidebarCourseFilter";
 
 const { Search } = Input;
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 function Courses() {
+  const [courseList, setCourseList] = useState(null);
+  useEffect(() => {
+    fetch(`${baseURL}/courses`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          setCourseList(json.data);
+        } else {
+          console.error("API returned failure:", json.message);
+        }
+      })
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
   const sampleCourses = [
     {
       id: "1",
@@ -80,13 +94,21 @@ function Courses() {
 
   // Lọc dữ liệu mẫu (demo)
   const filteredCourses = sampleCourses.filter((course) => {
-    const inCategory = filters.categories.length === 0 || filters.categories.includes(course.category);
-    const inPrice = course.price >= filters.price[0] && course.price <= filters.price[1];
+    const inCategory =
+      filters.categories.length === 0 ||
+      filters.categories.includes(course.category);
+    const inPrice =
+      course.price >= filters.price[0] && course.price <= filters.price[1];
     // Chuyển đổi duration về số giờ (demo, thực tế cần chuẩn hóa dữ liệu)
     const hours = parseFloat(course.duration);
-    const inDuration = isNaN(hours) || (hours >= filters.duration[0] && hours <= filters.duration[1]);
-    const inLessons = course.lessons >= filters.lessons[0] && course.lessons <= filters.lessons[1];
-    const inSearch = search === "" || course.name.toLowerCase().includes(search.toLowerCase());
+    const inDuration =
+      isNaN(hours) ||
+      (hours >= filters.duration[0] && hours <= filters.duration[1]);
+    const inLessons =
+      course.lessons >= filters.lessons[0] &&
+      course.lessons <= filters.lessons[1];
+    const inSearch =
+      search === "" || course.name.toLowerCase().includes(search.toLowerCase());
     return inCategory && inPrice && inDuration && inLessons && inSearch;
   });
 
@@ -94,7 +116,8 @@ function Courses() {
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     if (sort === "increase") return a.price - b.price;
     if (sort === "decrease") return b.price - a.price;
-    if (sort === "popular") return b.students.replace(/\./g,"") - a.students.replace(/\./g,"");
+    if (sort === "popular")
+      return b.students.replace(/\./g, "") - a.students.replace(/\./g, "");
     if (sort === "newest") return b.id - a.id;
     return 0;
   });
@@ -126,7 +149,7 @@ function Courses() {
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600 whitespace-nowrap">
-                  Hiển thị {sortedCourses.length} trong 1,234 khóa học
+                  Hiển thị {sortedCourses.length} trong {courseList === null ? 0 : courseList.length} khóa học
                 </span>
                 <Select
                   value={sort}
@@ -144,19 +167,22 @@ function Courses() {
             </div>
             {/* Course Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {sortedCourses.length === 0 ? (
-                <div className="col-span-full text-center text-gray-500 py-12">
-                  Không tìm thấy khóa học phù hợp.
+              {courseList === null || courseList.length === 0 ? (
+                <div className="col-span-full text-center mt-10 text-gray-500 py-12">
+                  <Empty description="Không tìm thấy khóa học nào" />
                 </div>
               ) : (
-                sortedCourses.map((course) => (
-                  <CourseItem key={course.id} course={course} />
-                ))
+                <>
+                  {courseList.map((course) => (
+                    <CourseItem key={course.id} course={course} />
+                  ))}
+
+                  {/* Pagination */}
+                  <div className="col-span-full flex justify-center mt-8">
+                    <Pagination defaultCurrent={1} total={20} />
+                  </div>
+                </>
               )}
-            </div>
-            {/* Pagination */}
-            <div className="flex justify-center mt-8">
-              <Pagination defaultCurrent={1} total={20} />
             </div>
           </div>
         </div>
