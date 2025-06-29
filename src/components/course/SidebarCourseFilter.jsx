@@ -1,16 +1,36 @@
 import React from "react";
-import { Checkbox, Slider, InputNumber, Button } from "antd";
+import { Checkbox, InputNumber, Button } from "antd";
 
 const categories = [
-  "Web Development",
-  "Frontend",
-  "Backend",
-  "Data Science",
-  "Mobile Development",
-  "Design",
+  { label: "Web Development", value: 1 },
+  { label: "Frontend", value: 2 },
+  { label: "Backend", value: 3 },
+  { label: "Data Science", value: 4 },
+  { label: "Mobile Development", value: 5 },
+  { label: "Design", value: 6 },
 ];
 
-function SidebarCourseFilter({ filters, setFilters }) {
+function SidebarCourseFilter({ filters, setFilters, onApply, resetFilters }) {
+  // Xử lý thay đổi danh mục
+  const handleCategoryChange = (checkedValues) => {
+    const newFilters = { ...filters, categoryIds: checkedValues, page: 1 };
+    setFilters(newFilters);
+    onApply(newFilters);
+  };
+
+  // Xử lý thay đổi giá
+  const handleMinPriceChange = (value) => {
+    const newFilters = { ...filters, minPrice: value || "", page: 1 };
+    setFilters(newFilters);
+    onApply(newFilters);
+  };
+
+  const handleMaxPriceChange = (value) => {
+    const newFilters = { ...filters, maxPrice: value || "", page: 1 };
+    setFilters(newFilters);
+    onApply(newFilters);
+  };
+
   return (
     <aside className="w-full lg:w-64 bg-white rounded-lg shadow p-5 mb-8 lg:mb-0">
       <h2 className="text-xl font-bold mb-4">Bộ lọc khóa học</h2>
@@ -19,8 +39,8 @@ function SidebarCourseFilter({ filters, setFilters }) {
         <h3 className="font-semibold mb-2">Danh mục</h3>
         <Checkbox.Group
           options={categories}
-          value={filters.categories}
-          onChange={(checked) => setFilters((f) => ({ ...f, categories: checked }))}
+          value={filters.categoryIds}
+          onChange={handleCategoryChange}
         />
       </div>
       {/* Giá */}
@@ -30,60 +50,31 @@ function SidebarCourseFilter({ filters, setFilters }) {
           <InputNumber
             min={0}
             max={1000}
-            value={filters.price[0]}
-            onChange={(val) => setFilters((f) => ({ ...f, price: [val || 0, f.price[1]] }))}
+            value={filters.minPrice}
+            onChange={handleMinPriceChange}
             className="w-20"
+            placeholder="Từ"
           />
           <span>-</span>
           <InputNumber
             min={0}
             max={1000}
-            value={filters.price[1]}
-            onChange={(val) => setFilters((f) => ({ ...f, price: [f.price[0], val || 1000] }))}
+            value={filters.maxPrice}
+            onChange={handleMaxPriceChange}
             className="w-20"
+            placeholder="Đến"
           />
         </div>
-        <Slider
-          range
-          min={0}
-          max={1000}
-          value={filters.price}
-          onChange={(val) => setFilters((f) => ({ ...f, price: val }))}
-          className="mt-2"
-        />
       </div>
-      {/* Thời lượng */}
-      <div className="mb-6">
-        <h3 className="font-semibold mb-2">Thời lượng (giờ)</h3>
-        <Slider
-          range
-          min={0}
-          max={20}
-          value={filters.duration}
-          onChange={(val) => setFilters((f) => ({ ...f, duration: val }))}
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>0</span>
-          <span>20+</span>
-        </div>
-      </div>
-      {/* Số bài học */}
-      <div className="mb-6">
-        <h3 className="font-semibold mb-2">Số bài học</h3>
-        <Slider
-          range
-          min={0}
-          max={100}
-          value={filters.lessons}
-          onChange={(val) => setFilters((f) => ({ ...f, lessons: val }))}
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>0</span>
-          <span>100+</span>
-        </div>
-      </div>
+      <Button
+        type="default"
+        className="w-full mt-4"
+        onClick={resetFilters}
+      >
+        Đặt lại bộ lọc
+      </Button>
     </aside>
   );
 }
 
-export default SidebarCourseFilter; 
+export default SidebarCourseFilter;

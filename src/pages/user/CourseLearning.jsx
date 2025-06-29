@@ -45,7 +45,7 @@ function CourseLearning() {
   // Xử lý khi user click vào lesson trong menu
   const handleLessonSelect = ({ key }) => {
     if (!course || !course.modules) return;
-    
+
     // Tìm lesson dựa trên key
     for (const module of course.modules) {
       const lesson = module.lessons.find(
@@ -82,7 +82,7 @@ function CourseLearning() {
   }
 
   if (!course) {
-    console.log('Không tìm thấy khóa học');
+    console.log("Không tìm thấy khóa học");
 
     return (
       <div className="flex justify-center items-center h-screen">
@@ -99,28 +99,26 @@ function CourseLearning() {
 
   // Kiểm tra xem course có modules và lessons không
   const hasModules = course.modules && course.modules.length > 0;
-  const hasLessons = hasModules && course.modules.some(module => 
-    module.lessons && module.lessons.length > 0
-  );
+  const hasLessons =
+    hasModules &&
+    course.modules.some(
+      (module) => module.lessons && module.lessons.length > 0
+    );
 
   if (!hasModules) {
-    console.log('Khóa học này chưa có nội dung');
+    console.log("Khóa học này chưa có nội dung");
     return (
       <div className="flex justify-center items-center h-screen">
-        <Empty
-          description="Khóa học này chưa có nội dung"
-        />
+        <Empty description="Khóa học này chưa có nội dung" />
       </div>
     );
   }
 
   if (!hasLessons) {
-    console.log('Khóa học này chưa có bài học nào');
+    console.log("Khóa học này chưa có bài học nào");
     return (
       <div className="flex justify-center items-center h-screen">
-        <Empty
-          description="Khóa học này chưa có bài học nào"
-        />
+        <Empty description="Khóa học này chưa có bài học nào" />
       </div>
     );
   }
@@ -129,12 +127,13 @@ function CourseLearning() {
   const items = course.modules.map((module) => ({
     key: `sub${module.moduleId}`,
     label: module.moduleName,
-    children: module.lessons && module.lessons.length > 0 
-      ? module.lessons.map((lesson) => ({
-          key: lesson.lessonId.toString(),
-          label: lesson.lessonName,
-        }))
-      : [],
+    children:
+      module.lessons && module.lessons.length > 0
+        ? module.lessons.map((lesson) => ({
+            key: lesson.lessonId.toString(),
+            label: lesson.lessonName,
+          }))
+        : [],
   }));
 
   return (
