@@ -9,17 +9,15 @@ function Courses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Filter state
+  // Filter state default values
   const [filters, setFilters] = useState({
     page: 1,
     pageSize: 6,
     searchTerm: "",
-    levelId: null,
-    languageId: null,
     categoryIds: [],
     minPrice: "",
     maxPrice: "",
-    sortBy: "createdAt",
+    sortBy: "CreatedAt",
     sortOrder: "desc",
   });
 
@@ -40,54 +38,65 @@ function Courses() {
     try {
       const queryParams = new URLSearchParams();
 
+      // PAGE AND PAGE SIZE
       queryParams.append("Page", filterParams.page.toString());
       queryParams.append("PageSize", filterParams.pageSize.toString());
 
+      // SEARCH TERM
       if (filterParams.searchTerm) {
-        queryParams.append("searchTerm", filterParams.searchTerm);
+        queryParams.append("SearchTerm", filterParams.searchTerm);
       }
-      if (filterParams.levelId) {
-        queryParams.append("levelId", filterParams.levelId.toString());
-      }
-      if (filterParams.languageId) {
-        queryParams.append("languageId", filterParams.languageId.toString());
-      }
+
+      // CATEGORY FILTERS
       if (filterParams.categoryIds && filterParams.categoryIds.length > 0) {
         filterParams.categoryIds.forEach((id) => {
-          queryParams.append("categoryIds", id.toString());
+          queryParams.append("CategoryIds", id.toString());
         });
       }
+
+      // PRICE RANGE 
       if (filterParams.minPrice) {
-        queryParams.append("minPrice", filterParams.minPrice.toString());
+        queryParams.append("MinPrice", filterParams.minPrice.toString());
       }
       if (filterParams.maxPrice) {
-        queryParams.append("maxPrice", filterParams.maxPrice.toString());
+        queryParams.append("MaxPrice", filterParams.maxPrice.toString());
       }
-      queryParams.append("sortBy", filterParams.sortBy);
-      queryParams.append("sortOrder", filterParams.sortOrder);
+
+      // SORT 
+      if (filterParams.sortBy === "Price-Desc") {
+        queryParams.append("SortBy", "Price");
+        queryParams.append("SortOrder", "desc");
+      } else if (filterParams.sortBy === "Price-Asc") {
+        queryParams.append("SortBy", "Price");
+        queryParams.append("SortOrder", "asc");
+      } else {
+        //  sorting by createdAt and Popular
+        queryParams.append("SortBy", filterParams.sortBy);
+        queryParams.append("SortOrder", "desc");
+      }
 
       const response = await fetch(
         `${baseURL}/courses/filter?${queryParams.toString()}`
       );
-
+      console.log("Fetching courses with params:", queryParams.toString()); //debug
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (data.success) {
-        setCourses(data.data.dataPaginated);
+      if (result.success) {
+        setCourses(result.data.dataPaginated);
         setPagination({
-          currentPage: data.data.currentPage,
-          pageSize: data.data.pageSize,
-          totalCount: data.data.totalCount,
-          totalPages: data.data.totalPages,
-          hasNextPage: data.data.hasNextPage,
-          hasPreviousPage: data.data.hasPreviousPage,
+          currentPage: result.data.currentPage,
+          pageSize: result.data.pageSize,
+          totalCount: result.data.totalCount,
+          totalPages: result.data.totalPages,
+          hasNextPage: result.data.hasNextPage,
+          hasPreviousPage: result.data.hasPreviousPage,
         });
       } else {
-        console.error("API returned failure:", data.message);
+        console.error("API returned failure:", result.message);
       }
     } catch (err) {
       console.error("Error fetching courses:", err);
@@ -98,7 +107,6 @@ function Courses() {
 
   useEffect(() => {
     fetchCourses();
-    // eslint-disable-next-line
   }, []);
 
   // Handle filter changes
@@ -164,23 +172,22 @@ function Courses() {
                   value={filters.searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
                   style={{ width: 300 }}
-                  onSearch={handleSearch}
                 />
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600 whitespace-nowrap">
-                  Hiển thị {courses.length} trong {pagination.totalCount} khóa học
+                  Hiển thị {courses.length} trong {pagination.totalCount} khóa
+                  học
                 </span>
                 <Select
                   value={filters.sortBy}
                   style={{ width: 150 }}
                   onChange={(value) => handleFilterChange("sortBy", value)}
                   options={[
-                    { value: "desc", label: "Giá giảm dần" },
-                    { value: "asc", label: "Giá tăng dần" },
-                    { value: "popular", label: "Phổ biến nhất" },
-                    { value: "createdAt", label: "Mới nhất" },
-                    { value: "free", label: "Miễn phí" },
+                    { value: "Price-Desc", label: "Giá giảm dần" },
+                    { value: "Price-Asc", label: "Giá tăng dần" },
+                    { value: "Popular", label: "Phổ biến nhất" },
+                    { value: "CreatedAt", label: "Mới nhất" },
                   ]}
                 />
               </div>

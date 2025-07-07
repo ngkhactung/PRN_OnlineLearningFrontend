@@ -41,7 +41,8 @@ function CourseDetails() {
     </div>
   );
   if (!course) return <p>Loading...</p>;
-  const items = course.modules.map((module) => ({
+  const items =
+    course.modules.map((module) => ({
       key: module.key,
       label: (
         <div className="flex items-center justify-between w-full pr-4">
@@ -81,22 +82,28 @@ function CourseDetails() {
                 </div>
                 <div className="flex justify-between">
                   <h4 className="text-2xl font-bold mt-8 mb-4 text-gray-800">
-                    Noi dung khoa hoc
+                    Nội dung khóa học
                   </h4>
                 </div>
-                <Collapse
-                  activeKey={activeKeys}
-                  onChange={handleCollapseChange}
-                  expandIcon={({ isActive }) => (
-                    <CaretRightOutlined
-                      rotate={isActive ? 90 : 0}
-                      className="!text-orange-500"
-                    />
-                  )}
-                  items={items}
-                  className="course-collaps"
-                  ghost
-                />
+                {course.modules.length === 0 ? (
+                  <div className="text-gray-500 text-center py-4">
+                    Nội dung sẽ được cập nhật
+                  </div>
+                ) : (
+                  <Collapse
+                    activeKey={activeKeys}
+                    onChange={handleCollapseChange}
+                    expandIcon={({ isActive }) => (
+                      <CaretRightOutlined
+                        rotate={isActive ? 90 : 0}
+                        className="!text-orange-500"
+                      />
+                    )}
+                    items={items}
+                    className="course-collaps"
+                    ghost
+                  />
+                )}
               </div>
             </div>
             <SidebarCourseDetail course={course} />
