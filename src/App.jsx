@@ -22,12 +22,20 @@ function App() {
           <Route path="/contact" element={<Contact />} />
 
           {/* Required authentication */}
-          <Route path="/user/my-learning/:myLearningTab" element={<MyLearning />} />
+          <Route
+            path="/user/my-learning/:myLearningTab"
+            element={<MyLearning />}
+          />
         </Route>
         <Route path="/auth" element={<Auth />} />
         <Route path="/otp" element={<Otp />} />
+
+        {/* Required authentication */}
         <Route element={<LearningLayout />}>
-          <Route path="/user/course-learning/:courseId" element={<CourseLearning />} />
+          <Route
+            path="/user/course-learning/:courseId"
+            element={<CourseLearning />}
+          />
         </Route>
       </Routes>
     </BrowserRouter>

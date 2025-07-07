@@ -1,109 +1,148 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Progress } from "antd";
+import React, { useState, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { Progress, Empty, Button, Spin } from "antd";
 import img from "../../assets/img/special_cource_1.png";
 
-const sampleCourses = [
-  {
-    id: "1",
-    name: "Complete Web Development Bootcamp",
-    price: 99,
-    category: "Web Development",
-    image: "/placeholder.svg?height=200&width=300",
-    students: "20.791",
-    lessons: 28,
-    duration: "4h59m",
-  },
-  {
-    id: "2",
-    name: "React Advanced Patterns and State Management with Redux Toolkit",
-    price: 149,
-    category: "Frontend",
-    image: "/placeholder.svg?height=200&width=300",
-    students: "15.432",
-    lessons: 35,
-    duration: "6h30m",
-  },
-  {
-    id: "3",
-    name: "Node.js Backend Development",
-    price: 129,
-    category: "Backend",
-    image: "/placeholder.svg?height=200&width=300",
-    students: "12.856",
-    lessons: 42,
-    duration: "8h15m",
-  },
-];
 function MyLearning() {
-  const [activeTab, setActiveTab] = useState("in-progress");
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
   const { myLearningTab } = useParams();
+  const navigate = useNavigate();
+
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState(myLearningTab || "in-progress");
+
+  // Fetch courses theo tab
+  const fetchCoursesEnroll = async (tab) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `${baseURL}/courses/my-learning?userId=U07de5297&progress=${tab}`
+      );
+      if (!response.ok) {
+        setError("Failed to fetch courses");
+        setCourses([]);
+        setLoading(false);
+        return;
+      }
+      const responseData = await response.json();
+      setCourses(responseData.data || []);
+    } catch (error) {
+      setError(error.message);
+      setCourses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Khi tab trên URL thay đổi, cập nhật state và fetch lại
   useEffect(() => {
-    setActiveTab(myLearningTab || "in-progress");
+    const tab = myLearningTab === "completed" ? "completed" : "in-progress";
+    setActiveTab(tab);
+    fetchCoursesEnroll(tab);
   }, [myLearningTab]);
+
+  // Xử lý khi click tab
+  const handleTabChange = (tab) => {
+    if (tab !== activeTab) {
+      navigate(`/user/my-learning/${tab}`);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Empty
+          message="Lỗi"
+          description={error}
+          type="error"
+          showIcon
+          className="max-w-md"
+        />
+      </div>
+    );
+
   return (
     <div className="container p-4 mt-10">
       <h1 className="font-bold text-4xl">My learning</h1>
       <div className="flex gap-3 mt-4">
         <button
           className={`border border-gray-700 rounded-3xl p-2 text-xs text-gray-700 
-            
           active:bg-orange-400 active:text-white 
             ${
               activeTab === "in-progress"
                 ? "bg-gray-500 text-white border-gray-500 hover:border-orange-500 hover:bg-orange-500 hover:text-white"
                 : "hover:border-orange-500 hover:bg-gray-100 hover:text-orange-500 "
             }`}
-          onClick={() => setActiveTab("in-progress")}
+          onClick={() => handleTabChange("in-progress")}
         >
           In Progress
         </button>
         <button
           className={`border border-gray-700 rounded-3xl p-2 text-xs text-gray-700 
-            
           active:bg-orange-400 active:text-white 
             ${
               activeTab === "completed"
                 ? "bg-gray-500 text-white border-gray-500 hover:border-orange-500 hover:bg-orange-500 hover:text-white"
                 : "hover:border-orange-500 hover:bg-gray-100 hover:text-orange-500 "
             }`}
-          onClick={() => setActiveTab("completed")}
+          onClick={() => handleTabChange("completed")}
         >
           Completed
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
-        {sampleCourses.length === 0 ? (
-          <div>Khong tim thay</div>
-        ) : (
-          sampleCourses.map((course) => (
+      {courses.length === 0 ? (
+        <div>
+          <Empty
+            className="flex flex-col items-center justify-center m-10 mb-20"
+            description="Bạn chưa đăng ký khóa học nào"
+          >
+            <Link to={"/courses"}>
+              <Button type="primary">Học luôn !</Button>
+            </Link>
+          </Empty>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+          {courses.map((course) => (
             <Link
+              key={course.id}
               className="bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 ease-in-out"
-              to={`/courses/${course.id}`}
+              to={`/courses/${course.courseId}`}
             >
               <img
-                src={img}
-                alt={`${course.name} Course`}
+                src={course.courseImgUrl || img}
+                alt={`${course.courseName} Course`}
                 className="w-full h-48 object-cover rounded-t-2xl"
               />
               <div className="p-6 space-y-4">
                 <Link
-                  to={`/courses/${course.id}`}
+                  to={`/courses/${course.courseId}`}
                   className="block h-18 hover:text-orange-500 transition-colors"
                 >
                   <h3 className="text-lg font-semibold text-blue-950 line-clamp-2">
-                    {course.name}
+                    {course.courseName}
                   </h3>
                 </Link>
                 <div className="justify-between flex items-center mb-4">
-                  <Progress percent={30} strokeColor={"#f97316"} />
+                  <Progress
+                    percent={course.percentCompleted}
+                    strokeColor={"#f97316"}
+                  />
                 </div>
               </div>
             </Link>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Pagination, Select, Input, Empty } from "antd";
+import { Pagination, Select, Input, Empty,Spin } from "antd";
 import CourseItem from "../components/course/CourseItem";
 import SidebarCourseFilter from "../components/course/SidebarCourseFilter";
 
@@ -74,7 +74,7 @@ function Courses() {
         queryParams.append("SortBy", filterParams.sortBy);
         queryParams.append("SortOrder", "desc");
       }
-
+      
       const response = await fetch(
         `${baseURL}/courses/filter?${queryParams.toString()}`
       );
@@ -196,7 +196,7 @@ function Courses() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {loading ? (
                 <div className="col-span-full text-center mt-10 text-gray-500 py-12">
-                  Đang tải...
+                  <Spin tip="Đang tải khóa học..."  size="large"/>
                 </div>
               ) : courses.length === 0 ? (
                 <div className="col-span-full text-center mt-10 text-gray-500 py-12">

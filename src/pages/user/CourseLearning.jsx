@@ -1,4 +1,4 @@
-import { Layout, Menu, Button, Empty, Alert } from "antd";
+import { Layout, Menu, Button, Empty, Alert,Spin } from "antd";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Learning from "../../components/course/Learning";
@@ -61,7 +61,7 @@ function CourseLearning() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        <Spin size="large"/>
       </div>
     );
   }

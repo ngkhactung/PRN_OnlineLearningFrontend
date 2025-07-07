@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Collapse } from "antd";
+import { Button, Collapse,Empty } from "antd";
 import { CaretRightOutlined } from "@ant-design/icons";
 import SidebarCourseDetail from "../components/course/SidebarCourseDetail";
 import { useParams } from "react-router-dom";
@@ -86,8 +86,14 @@ function CourseDetails() {
                   </h4>
                 </div>
                 {course.modules.length === 0 ? (
-                  <div className="text-gray-500 text-center py-4">
-                    Nội dung sẽ được cập nhật
+                  <div className="flex justify-center items-center h-32">
+                    <Empty
+                      message="Lỗi"
+                      description="Nội dung sẽ được cập nhật"
+                      type="error"
+                      showIcon
+                      className="max-w-md"
+                    />
                   </div>
                 ) : (
                   <Collapse
