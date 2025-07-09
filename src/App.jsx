@@ -31,12 +31,10 @@ function App() {
         <Route path="/otp" element={<Otp />} />
 
         {/* Required authentication */}
-        <Route element={<LearningLayout />}>
-          <Route
-            path="/user/course-learning/:courseId"
-            element={<CourseLearning />}
-          />
-        </Route>
+        <Route
+          path="/user/course-learning/:courseId"
+          element={<CourseLearning />}
+        />
       </Routes>
     </BrowserRouter>
   );

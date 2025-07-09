@@ -8,20 +8,39 @@ import {
 
 const { Content } = Layout;
 
-const QuizQuestionSample = () => {
-  const [selectedValue, setSelectedValue] = useState(null);
+function Quiz({ questions, onFinish }) {
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
   const [showResult, setShowResult] = useState(false);
-  const correctAnswer = 2; // Option B is correct
+
+  const currentQuestion = questions[current];
+  const isAnswered = answers[current] !== null;
+  const isCorrect = isAnswered && answers[current] === currentQuestion.correct;
 
   const handleAnswerChange = (e) => {
-    setSelectedValue(e.target.value);
+    const newAnswers = [...answers];
+    newAnswers[current] = e.target.value;
+    setAnswers(newAnswers);
+    setShowResult(false);
   };
 
-  const handleSubmit = () => {
-    setShowResult(true);
+  const handleCheck = () => setShowResult(true);
+
+  const handleNext = () => {
+    setShowResult(false);
+    if (current < questions.length - 1) setCurrent(current + 1);
+    else if (onFinish) onFinish(answers);
   };
 
-  const isCorrect = selectedValue === correctAnswer;
+  const handlePrev = () => {
+    setShowResult(false);
+    if (current > 0) setCurrent(current - 1);
+  };
+
+  // Tính phần trăm hoàn thành
+  const percent = Math.round(
+    (answers.filter((a) => a !== null).length / questions.length) * 100
+  );
 
   return (
     <Content className="flex-1 overflow-y-auto px-2 md:px-8 py-8">
@@ -29,10 +48,12 @@ const QuizQuestionSample = () => {
         {/* Progress Bar */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Câu hỏi 1 / 5</span>
-            <span className="text-sm text-gray-600">20% hoàn thành</span>
+            <span className="text-sm text-gray-600">
+              Câu hỏi {current + 1} / {questions.length}
+            </span>
+            <span className="text-sm text-gray-600">{percent}% hoàn thành</span>
           </div>
-          <Progress percent={20} showInfo={false} strokeColor="#1890ff" />
+          <Progress percent={percent} showInfo={false} strokeColor="#1890ff" />
         </div>
 
         {/* Question Card */}
@@ -42,55 +63,48 @@ const QuizQuestionSample = () => {
             <div className="flex items-start mb-6">
               <QuestionCircleOutlined className="text-blue-500 text-xl mr-3 mt-1 flex-shrink-0" />
               <h1 className="text-2xl font-bold text-gray-800 leading-relaxed">
-                ABC is acbd?
+                {currentQuestion.question}
               </h1>
             </div>
 
             {/* Answer Options */}
             <div className="ml-8">
               <Radio.Group
-                value={selectedValue}
+                value={answers[current]}
                 onChange={handleAnswerChange}
                 className="w-full"
                 disabled={showResult}
               >
                 <div className="space-y-4">
-                  {[
-                    { value: 1, label: "Option A" },
-                    { value: 2, label: "Option B" },
-                    { value: 3, label: "Option C" },
-                  ].map((option) => (
-                    <div key={option.value} className="group">
-                      <Radio
-                        value={option.value}
-                        className="radio-option w-full"
-                      >
+                  {currentQuestion.options.map((option, idx) => (
+                    <div key={idx} className="group">
+                      <Radio value={idx} className="radio-option w-full">
                         <div
                           className={`
-                          w-full p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer
-                          ${
-                            selectedValue === option.value && !showResult
-                              ? "border-blue-500 bg-blue-50"
-                              : showResult && option.value === correctAnswer
-                              ? "border-green-500 bg-green-50"
-                              : showResult &&
-                                selectedValue === option.value &&
-                                option.value !== correctAnswer
-                              ? "border-red-500 bg-red-50"
-                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                          }
-                        `}
+                            w-full p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer
+                            ${
+                              answers[current] === idx && !showResult
+                                ? "border-blue-500 bg-blue-50"
+                                : showResult && idx === currentQuestion.correct
+                                ? "border-green-500 bg-green-50"
+                                : showResult &&
+                                  answers[current] === idx &&
+                                  idx !== currentQuestion.correct
+                                ? "border-red-500 bg-red-50"
+                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                            }
+                          `}
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-lg font-medium text-gray-700">
-                              {option.label}
+                              {option}
                             </span>
-                            {showResult && option.value === correctAnswer && (
+                            {showResult && idx === currentQuestion.correct && (
                               <CheckCircleOutlined className="text-green-500 text-xl" />
                             )}
                             {showResult &&
-                              selectedValue === option.value &&
-                              option.value !== correctAnswer && (
+                              answers[current] === idx &&
+                              idx !== currentQuestion.correct && (
                                 <CloseCircleOutlined className="text-red-500 text-xl" />
                               )}
                           </div>
@@ -107,13 +121,13 @@ const QuizQuestionSample = () => {
           {showResult && (
             <div
               className={`
-              ml-8 p-4 rounded-lg border-l-4 mb-6
-              ${
-                isCorrect
-                  ? "bg-green-50 border-green-500"
-                  : "bg-red-50 border-red-500"
-              }
-            `}
+                ml-8 p-4 rounded-lg border-l-4 mb-6
+                ${
+                  isCorrect
+                    ? "bg-green-50 border-green-500"
+                    : "bg-red-50 border-red-500"
+                }
+              `}
             >
               <div className="flex items-center mb-2">
                 {isCorrect ? (
@@ -128,23 +142,23 @@ const QuizQuestionSample = () => {
               <p className="text-gray-700">
                 {isCorrect
                   ? "Tuyệt vời! Bạn đã chọn đúng đáp án."
-                  : "Đáp án đúng là Option B. Hãy xem lại kiến thức và thử lại."}
+                  : `Đáp án đúng là: ${currentQuestion.options[currentQuestion.correct]}`}
               </p>
             </div>
           )}
 
           {/* Action Buttons */}
           <div className="flex justify-between items-center ml-8">
-            <Button size="large" disabled>
+            <Button size="large" onClick={handlePrev} disabled={current === 0}>
               Câu trước
             </Button>
 
             <div className="space-x-3">
-              {!showResult && selectedValue && (
+              {!showResult && answers[current] !== null && (
                 <Button
                   type="primary"
                   size="large"
-                  onClick={handleSubmit}
+                  onClick={handleCheck}
                   className="px-8"
                 >
                   Kiểm tra đáp án
@@ -152,12 +166,17 @@ const QuizQuestionSample = () => {
               )}
 
               {showResult && (
-                <Button type="primary" size="large" className="px-8">
-                  Câu tiếp theo
+                <Button
+                  type="primary"
+                  size="large"
+                  className="px-8"
+                  onClick={handleNext}
+                >
+                  {current === questions.length - 1 ? "Hoàn thành" : "Câu tiếp theo"}
                 </Button>
               )}
 
-              {!selectedValue && (
+              {answers[current] === null && (
                 <Button size="large" disabled className="px-8">
                   Chọn đáp án
                 </Button>
@@ -172,19 +191,22 @@ const QuizQuestionSample = () => {
             Tiến trình câu hỏi
           </h4>
           <div className="flex gap-3">
-            {[1, 2, 3, 4, 5].map((num) => (
+            {questions.map((q, idx) => (
               <div
-                key={num}
+                key={idx}
                 className={`
                   w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold cursor-pointer transition-all duration-200
                   ${
-                    num === 1
+                    idx === current
                       ? "bg-blue-500 text-white shadow-lg"
+                      : answers[idx] !== null
+                      ? "bg-green-100 text-green-600 border border-green-400"
                       : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                   }
                 `}
+                onClick={() => setCurrent(idx)}
               >
-                {num}
+                {idx + 1}
               </div>
             ))}
           </div>
@@ -204,6 +226,6 @@ const QuizQuestionSample = () => {
       `}</style>
     </Content>
   );
-};
+}
 
-export default QuizQuestionSample;
+export default Quiz;

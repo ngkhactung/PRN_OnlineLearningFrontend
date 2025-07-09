@@ -1,7 +1,26 @@
 import React from "react";
 import { Button, Layout, Input } from "antd";
 const { Content } = Layout;
+
 function Learning({ lesson }) {
+  // Hàm trích xuất video ID từ YouTube URL
+  const getYouTubeEmbedUrl = (videoUrl) => {
+    if (!videoUrl) return null;
+
+    const youtubeRegex =
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
+    const match = videoUrl.match(youtubeRegex);
+
+    if (match && match[1]) {
+      return `https://www.youtube.com/embed/${match[1]}?rel=0&enablejsapi=1`;
+    }
+
+    return null;
+  };
+
+  // Lấy video ID từ lesson
+  let videoUrl = getYouTubeEmbedUrl(lesson.urlVideo);
+  console.log("Video URL:", videoUrl);
   return (
     <>
       {/* Main content trái: có scroll riêng */}
@@ -10,16 +29,24 @@ function Learning({ lesson }) {
           {/* Video + tiêu đề */}
           <div className="mb-6">
             <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4 flex items-center justify-center">
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/8ud31ymkNT0?si=4jZb7gfQST2qyDr4"
-                title="YouTube video player"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-                className="w-full h-full"
-              ></iframe>
+              {videoUrl && (
+                <iframe
+                  key={lesson.lessonId}
+                  id="lessonVideo"
+                  width="100%"
+                  height="100%"
+                  src={
+                    videoUrl +
+                    (videoUrl.includes("?") ? "&" : "?") +
+                    "enablejsapi=1"
+                  }
+                  title="YouTube video player"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                  className="w-full h-full"
+                ></iframe>
+              )}
             </div>
             <h2 className="text-2xl font-bold mb-2">{lesson.lessonName}</h2>
           </div>
