@@ -115,7 +115,7 @@ function CourseLearning() {
         })
         .finally(() => setLoading(false));
     }
-  }, [courseId]);
+  }, [courseId,baseURL]);
 
   const handleMenuSelect = ({ key }) => {
     if (!course || !course.modules) return;
@@ -207,7 +207,7 @@ function CourseLearning() {
         playerRef.current.destroy();
       }
     };
-  }, [currentLesson]);
+  }, [currentLesson,baseURL]);
 
   useEffect(() => {
     if (course && course.modules && course.modules.length > 0) {
@@ -395,7 +395,7 @@ function CourseLearning() {
             {selectedQuiz && (
               <Quiz
                 questions={questions}
-                onFinish={(answers) => { /* xử lý khi hoàn thành quiz */ }}
+                // onFinish={(answers) => { /* xử lý khi hoàn thành quiz */ }}
               />
             )}
           </div>
