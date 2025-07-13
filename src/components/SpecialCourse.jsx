@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Users, CirclePlay, Clock } from "lucide-react";
 
 function SpecialCourse() {
   const courseItems = [
@@ -38,17 +39,14 @@ function SpecialCourse() {
         {/* Section Header */}
         <div className="flex justify-center mb-12">
           <div className="text-center">
-            <p className="text-lg font-medium uppercase text-gray-600 mb-2">
-              popular courses
-            </p>
             <h2 className="text-3xl md:text-4xl font-bold text-blue-950">
-              Special Courses
+              Popular Courses
             </h2>
           </div>
         </div>
 
         {/* Course Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16">
           {courseItems.map((course) => (
             <Link
               key={course.id}
@@ -61,15 +59,20 @@ function SpecialCourse() {
                 className="w-full h-48 object-cover rounded-t-2xl"
               />
               <div className="p-6 space-y-4">
-                <Link
-                  to="/courseDetail"
-                  className="inline-block px-4 py-1 bg-orange-100 text-orange-500 rounded-full text-sm font-medium"
-                >
-                  {course.category}
-                </Link>
-                <h4 className="text-2xl font-bold text-blue-950">
-                  ${course.price}.00
-                </h4>
+                <div className="justify-between flex items-center mb-4">
+                  <h4 className="text-2xl font-bold text-blue-950">
+                    {course.price.toLocaleString("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    })}
+                  </h4>
+                  <Link
+                    to="/courseDetail"
+                    className="inline-block px-4 py-1 bg-orange-100 text-orange-500 rounded-full text-sm font-medium"
+                  >
+                    {course.category}
+                  </Link>
+                </div>
                 <Link
                   to="/courseDetail"
                   className="block hover:text-orange-500 transition-colors"
@@ -78,7 +81,25 @@ function SpecialCourse() {
                     {course.name}
                   </h3>
                 </Link>
-                <p className="text-gray-600">{course.description}</p>
+                <div className="justify-between flex items-center mt-4">
+                  {/* Users metric */}
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Users className="w-4 h-4" />
+                    <span className="text-sm font-medium">20.791</span>
+                  </div>
+
+                  {/* Play/Views metric */}
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <CirclePlay className="w-4 h-4" />
+                    <span className="text-sm font-medium">28</span>
+                  </div>
+
+                  {/* Time metric */}
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm font-medium">4h59p</span>
+                  </div>
+                </div>
               </div>
             </Link>
           ))}

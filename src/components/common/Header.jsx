@@ -8,13 +8,13 @@ function Header() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <a href="index.html" className="flex items-center">
+            <NavLink to="/" className="flex items-center">
               <img
                 src={logo}
                 alt="logo"
                 className="h-8 lg:h-10 w-auto"
               />
-            </a>
+            </NavLink>
           </div>
 
           {/* Desktop Navigation */}

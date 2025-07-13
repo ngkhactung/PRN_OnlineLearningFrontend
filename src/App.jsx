@@ -8,6 +8,8 @@ import Contact from "./pages/Contact.jsx";
 import MainLayout from "./components/layouts/MainLayout.jsx";
 import CourseLearning from "./pages/user/CourseLearning.jsx";
 import Otp from "./pages/auth/Otp.jsx";
+import LearningLayout from "./components/layouts/LearningLayout.jsx";
+import MyLearning from "./pages/user/MyLearning.jsx";
 function App() {
   return (
     <BrowserRouter>
@@ -18,10 +20,21 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:id" element={<CourseDetails />} />
           <Route path="/contact" element={<Contact />} />
+
+          {/* Required authentication */}
+          <Route
+            path="/user/my-learning/:myLearningTab"
+            element={<MyLearning />}
+          />
         </Route>
         <Route path="/auth" element={<Auth />} />
         <Route path="/otp" element={<Otp />} />
-        <Route path="/courseLearning" element={<CourseLearning />} />
+
+        {/* Required authentication */}
+        <Route
+          path="/user/course-learning/:courseId"
+          element={<CourseLearning />}
+        />
       </Routes>
     </BrowserRouter>
   );
