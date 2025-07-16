@@ -1,21 +1,29 @@
 import { Layout, Menu, Button, Empty, Alert, Spin } from "antd";
-import { useState, useEffect, useRef } from "react";
-import { CheckOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
+import { CheckOutlined, ReadOutlined, FormOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
+import { fetchCourseData, fetchProgress, markLessonAsCompleted } from "../../api/courseApi";
+import {
+  getQuizById,
+  getQuizByModuleId,
+  submitQuiz,
+  getQuizResult,
+  completeQuiz,
+} from "../../api/quizApi";
+const { Sider } = Layout;
 import Learning from "../../components/course/Learning";
 import HeaderLearning from "../../components/course/HeaderLearning";
-import Quiz from '../../components/course/Quizzes';
-const { Sider } = Layout;
+import Quiz from "../../components/course/Quizzes";
+
 
 function CourseLearning() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentLesson, setCurrentLesson] = useState(null);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
   const [completedLessons, setCompletedLessons] = useState([]);
+  const [completedQuizzes, setCompletedQuizzes] = useState([]);
   const { courseId } = useParams();
-  const baseURL = import.meta.env.VITE_API_BASE_URL;
-  const playerRef = useRef(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const questions = [
@@ -26,6 +34,7 @@ function CourseLearning() {
     },
     // ... các câu hỏi khác
   ];
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
   // Hàm tìm lesson tiếp theo sau lesson cuối cùng đã hoàn thành
   const findNextLesson = (modules, lessonIdCompleted) => {
     if (!lessonIdCompleted || lessonIdCompleted.length === 0) {
@@ -66,57 +75,93 @@ function CourseLearning() {
     // Nếu đã hoàn thành tất cả lessons, trả về lesson cuối cùng
     return allLessons[allLessons.length - 1];
   };
-
   // Load course data
-  useEffect(() => {
+  const getCourseData = async () => {
     if (courseId) {
       console.log("Loading course data for ID:", courseId);
+      try {
+        const json = await fetchCourseData(courseId);
+        console.log("Course data loaded:", json);
 
-      fetch(`${baseURL}/courses/learning/${courseId}`)
-        .then((res) => res.json())
-        .then((json) => {
-          console.log("Course data loaded:", json);
+        if (json.success) {
+          setCourse(json.data);
+          setCompletedLessons(json.data.lessonIdCompleted || []);
 
-          if (json.success) {
-            setCourse(json.data);
-            setCompletedLessons(json.data.lessonIdCompleted || []);
-
-            // Kiểm tra xem course có modules và lessons không
-            if (json.data.modules && json.data.modules.length > 0) {
-              const hasLessons = json.data.modules.some(
-                (module) => module.lessons && module.lessons.length > 0
+          // Kiểm tra trạng thái quiz đã pass
+          if (json.data.modules && json.data.modules.length > 0) {
+            const quizIds = [];
+            json.data.modules.forEach((module) => {
+              (module.quizzes || []).forEach((quiz) => {
+                quizIds.push(quiz.quizId);
+              });
+            });
+            // Gọi API kiểm tra trạng thái từng quiz
+            Promise.all(
+              quizIds.map((quizId) =>
+                getQuizResult(baseURL, quizId).then((res) => ({ quizId, isPassed: res?.data?.isPassed }))
+              )
+            ).then((results) => {
+              setCompletedQuizzes(
+                results.filter((r) => r.isPassed).map((r) => r.quizId)
               );
+            });
+          }
+          // Kiểm tra xem course có modules và lessons không
+          if (json.data.modules && json.data.modules.length > 0) {
+            const hasLessons = json.data.modules.some(
+              (module) => module.lessons && module.lessons.length > 0
+            );
 
-              if (hasLessons) {
-                // Tìm current lesson dựa trên lessonIdCompleted
-                const nextLesson = findNextLesson(
-                  json.data.modules,
-                  json.data.lessonIdCompleted
-                );
-                if (nextLesson) {
-                  setCurrentLesson(nextLesson);
-                  console.log("Current lesson set to:", nextLesson);
-                } else {
-                  setError("Không thể xác định bài học tiếp theo.");
-                }
+            if (hasLessons) {
+              // Tìm current lesson dựa trên lessonIdCompleted
+              const nextLesson = findNextLesson(
+                json.data.modules,
+                json.data.lessonIdCompleted
+              );
+              if (nextLesson) {
+                setSelectedLesson(nextLesson);
+                console.log("Current lesson set to:", nextLesson);
               } else {
-                setError("Khóa học này chưa có bài học nào.");
+                setError("Không thể xác định bài học tiếp theo.");
               }
             } else {
-              setError("Khóa học này chưa có module nào.");
+              setError("Khóa học này chưa có bài học nào.");
             }
           } else {
-            setError(json.message || "Không thể tải thông tin khóa học.");
+            setError("Khóa học này chưa có module nào.");
           }
-        })
-        .catch((err) => {
-          console.error("Fetch error:", err);
-          setError("Lỗi kết nối. Vui lòng thử lại sau.");
-        })
-        .finally(() => setLoading(false));
+        } else {
+          setError(json.message || "Không thể tải thông tin khóa học.");
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError("Lỗi kết nối. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [courseId,baseURL]);
-
+  };
+  // Load progress of user learning
+  const getProgress = async () => {
+    if (!courseId) return;
+    try {
+      const data = await fetchProgress(courseId);
+      if (data.success) {
+        setProgress(data.data);
+      } else {
+        console.error("Error fetching progress:", data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching progress:", err);
+    }
+  };
+  // Load course data
+  useEffect(() => {
+    getCourseData();
+    getProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId]);
+  // Handle menu select
   const handleMenuSelect = ({ key }) => {
     if (!course || !course.modules) return;
 
@@ -143,72 +188,8 @@ function CourseLearning() {
     }
   };
 
-  // Cleanup khi component unmount
-  useEffect(() => {
-    return () => {
-      if (playerRef.current) {
-        try {
-          playerRef.current.destroy();
-        } catch (error) {
-          console.warn("Error destroying player on cleanup:", error);
-        }
-      }
-    };
-  }, []);
 
-  useEffect(() => {
-    if (!currentLesson || !currentLesson.urlVideo) return;
-
-    // Hàm tạo player
-    function createPlayer() {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-      }
-      playerRef.current = new window.YT.Player("lessonVideo", {
-        events: {
-          onStateChange: onPlayerStateChange,
-        },
-      });
-    }
-
-    // Hàm xử lý khi video end
-    function onPlayerStateChange(event) {
-      if (event.data === window.YT.PlayerState.ENDED) {
-        console.log("Video ended, marking lesson as completed");
-        // Gọi API backend khi video kết thúc
-        fetch(`${baseURL}/courses/mark-as-completed`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(currentLesson.lessonId),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.success) {
-              // Cập nhật UI dấu tích
-              setCompletedLessons((prev) => [...prev, currentLesson.lessonId]);
-            }
-          });
-      }
-    }
-
-    // Load YT API nếu chưa có
-    if (!window.YT || !window.YT.Player) {
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      document.body.appendChild(tag);
-      window.onYouTubeIframeAPIReady = createPlayer;
-    } else {
-      createPlayer();
-    }
-
-    // Cleanup khi unmount hoặc đổi lesson
-    return () => {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-      }
-    };
-  }, [currentLesson,baseURL]);
-
+  //* Set selected lesson or quiz
   useEffect(() => {
     if (course && course.modules && course.modules.length > 0) {
       const firstModule = course.modules[0];
@@ -222,17 +203,21 @@ function CourseLearning() {
     }
   }, [course]);
 
-  // Flatten tất cả items (lesson và quiz) của module hiện tại
+  //* Flatten tất cả items (lesson và quiz) của module hiện tại
   const allMenuItems = [];
   if (course && course.modules) {
     course.modules.forEach((module) => {
       // lesson
       (module.lessons || []).forEach((lesson) => {
-        allMenuItems.push({ type: 'lesson', id: lesson.lessonId, data: lesson });
+        allMenuItems.push({
+          type: "lesson",
+          id: lesson.lessonId,
+          data: lesson,
+        });
       });
       // quiz
       (module.quizzes || []).forEach((quiz) => {
-        allMenuItems.push({ type: 'quiz', id: quiz.quizId, data: quiz });
+        allMenuItems.push({ type: "quiz", id: quiz.quizId, data: quiz });
       });
     });
   }
@@ -240,20 +225,20 @@ function CourseLearning() {
   let currentIndex = -1;
   if (selectedLesson) {
     currentIndex = allMenuItems.findIndex(
-      (item) => item.type === 'lesson' && item.id === selectedLesson.lessonId
+      (item) => item.type === "lesson" && item.id === selectedLesson.lessonId
     );
   } else if (selectedQuiz) {
     currentIndex = allMenuItems.findIndex(
-      (item) => item.type === 'quiz' && item.id === selectedQuiz.quizId
+      (item) => item.type === "quiz" && item.id === selectedQuiz.quizId
     );
   }
   const handlePrevLesson = () => {
     if (currentIndex > 0) {
       const prevItem = allMenuItems[currentIndex - 1];
-      if (prevItem.type === 'lesson') {
+      if (prevItem.type === "lesson") {
         setSelectedLesson(prevItem.data);
         setSelectedQuiz(null);
-      } else if (prevItem.type === 'quiz') {
+      } else if (prevItem.type === "quiz") {
         setSelectedQuiz(prevItem.data);
         setSelectedLesson(null);
       }
@@ -263,14 +248,34 @@ function CourseLearning() {
   const handleNextLesson = () => {
     if (currentIndex < allMenuItems.length - 1) {
       const nextItem = allMenuItems[currentIndex + 1];
-      if (nextItem.type === 'lesson') {
+      if (nextItem.type === "lesson") {
         setSelectedLesson(nextItem.data);
         setSelectedQuiz(null);
-      } else if (nextItem.type === 'quiz') {
+      } else if (nextItem.type === "quiz") {
         setSelectedQuiz(nextItem.data);
         setSelectedLesson(null);
       }
     }
+  };
+
+  const handleLessonCompleted = async (lessonId) => {
+    // Nếu đã hoàn thành rồi thì không gọi lại
+    if (completedLessons.includes(lessonId)) return;
+    try {
+      const res = await markLessonAsCompleted(lessonId);
+      if (res.success) {
+        setCompletedLessons((prev) => [...prev, lessonId]);
+        await getProgress(); // Cập nhật tiến độ sau khi hoàn thành
+      }
+    } catch (err) {
+      // Có thể hiển thị thông báo lỗi nếu cần
+      console.error("Lỗi khi đánh dấu hoàn thành bài học:", err);
+    }
+  };
+
+  // Khi quiz hoàn thành (pass), cập nhật progress
+  const handleQuizCompleted = async (quizId) => {
+    await getProgress();
   };
 
   if (loading) {
@@ -312,7 +317,7 @@ function CourseLearning() {
     );
   }
 
-  // Kiểm tra xem course có modules và lessons không
+  //* Kiểm tra xem course có modules và lessons không
   const hasModules = course.modules && course.modules.length > 0;
   const hasLessons =
     hasModules &&
@@ -324,7 +329,7 @@ function CourseLearning() {
     console.log("Khóa học này chưa có nội dung");
     return (
       <Layout className="min-h-screen flex flex-col overflow-hidden">
-        <HeaderLearning course={course} />
+        <HeaderLearning course={course} progress={progress} completedLessons={completedLessons} />
         <div className="flex-1 flex justify-center items-center">
           <Empty description="Khóa học này chưa có nội dung" />
         </div>
@@ -336,7 +341,7 @@ function CourseLearning() {
     console.log("Khóa học này chưa có bài học nào");
     return (
       <Layout className="min-h-screen flex flex-col overflow-hidden">
-        <HeaderLearning course={course} />
+        <HeaderLearning course={course} progress={progress} completedLessons={completedLessons} />
         <div className="flex-1 flex justify-center items-center">
           <Empty description="Khóa học này chưa có nội dung" />
         </div>
@@ -344,7 +349,7 @@ function CourseLearning() {
     );
   }
 
-  // Tạo menu items từ dữ liệu modules và lessons
+  //* Tạo menu items từ dữ liệu modules và lessons
   const items = course.modules.map((module) => ({
     key: `${module.moduleId}`,
     label: module.moduleName,
@@ -354,13 +359,16 @@ function CourseLearning() {
         key: `lesson-${lesson.lessonId}`,
         label: (
           <div className="flex items-center justify-between">
-            <span>{lesson.lessonName}</span>
+            <span>
+              <ReadOutlined className="mr-2 text-blue-500" />
+              {lesson.lessonName}
+            </span>
             {completedLessons.includes(lesson.lessonId) && (
               <CheckOutlined style={{ color: "#22c55e", fontSize: "20px" }} />
             )}
           </div>
         ),
-        type: 'lesson',
+        type: "lesson",
         lesson, // truyền lesson object để dùng khi click
       })),
       // Quiz items
@@ -368,10 +376,16 @@ function CourseLearning() {
         key: `quiz-${quiz.quizId}`,
         label: (
           <div className="flex items-center justify-between">
-            <span>{quiz.quizName || `Quiz ${idx + 1}`}</span>
+            <span>
+              <FormOutlined className="mr-2 text-purple-500" />
+              {quiz.quizName || `Quiz ${idx + 1}`}
+            </span>
+            {completedQuizzes.includes(quiz.quizId) && (
+              <CheckOutlined style={{ color: "#22c55e", fontSize: "20px" }} />
+            )}
           </div>
         ),
-        type: 'quiz',
+        type: "quiz",
         quiz, // truyền quiz object để dùng khi click
       })),
     ],
@@ -387,15 +401,21 @@ function CourseLearning() {
   return (
     <Layout className="min-h-screen flex flex-col overflow-hidden">
       {/* Header cố định */}
-      <HeaderLearning course={course} completedLessons={completedLessons} />
+      <HeaderLearning course={course} progress={progress} completedLessons={completedLessons} />
       <Layout hasSider className="h-[calc(100vh-80px-64px)] overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="flex-1 overflow-y-auto">
-            {selectedLesson && <Learning lesson={selectedLesson} />}
+            {selectedLesson && <Learning lesson={selectedLesson} onLessonCompleted={handleLessonCompleted} />}
             {selectedQuiz && (
               <Quiz
-                questions={questions}
-                // onFinish={(answers) => { /* xử lý khi hoàn thành quiz */ }}
+                quizId={selectedQuiz.quizId}
+                moduleId={selectedQuiz.moduleId}
+                fetchQuiz={getQuizById}
+                submitQuiz={submitQuiz}
+                getQuizResult={getQuizResult}
+                completeQuiz={completeQuiz}
+                onQuizCompleted={handleQuizCompleted}
+                baseURL={baseURL}
               />
             )}
           </div>
