@@ -8,17 +8,14 @@ import ChangePassword from './ChangePassword';
 import dayjs from 'dayjs';
 
 function Profile() {
-  const { isAuthenticated } = useAuth();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
 
   useEffect(() => {
-    if (isAuthenticated) {
       fetchProfile();
-    }
-  }, [isAuthenticated]);
+  });
 
   const fetchProfile = async () => {
     try {
@@ -68,17 +65,6 @@ function Profile() {
       setLoading(false);
     }
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center bg-white p-8 rounded-lg shadow-lg">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600">Please login to view your profile.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-gray-50 pt-7">
