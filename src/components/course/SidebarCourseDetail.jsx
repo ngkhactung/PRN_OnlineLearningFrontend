@@ -18,13 +18,13 @@ function SidebarCourseDetail({ course }) {
 
   //* Xử lí ADD TO CART ở đây
   const handleAddToCart = () => {
-    if (!isLoggedIn) return navigate("/login");
+    if (!isLoggedIn) return navigate("/auth");
     // Thêm vào giỏ hàng
   };
 
   //* Xử lí BUY NOW ở đây
   const handleBuyNow = () => {
-    if (!isLoggedIn) return navigate("/login");
+    if (!isLoggedIn) return navigate("/auth");
     // Chuyển sang trang thanh toán
   };
 

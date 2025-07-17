@@ -2,7 +2,7 @@ import axios from "axios";
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export const checkEnrollment = async (courseId) => {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem("token");
   if (!token) return false;
   try {
     const res = await axios.get(
