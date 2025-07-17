@@ -1,9 +1,37 @@
+import React, { useEffect, useState } from "react";
 import { Button } from "antd";
-import React from "react";
 import img from "../../assets/img/special_cource_1.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { checkEnrollment } from "../../api/courseApi";
+import useAuth from "../../utils/useAuth";
 
 function SidebarCourseDetail({ course }) {
+  const isLoggedIn = useAuth();
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      checkEnrollment(course.courseId).then(setIsEnrolled);
+    }
+  }, [isLoggedIn, course.courseId]);
+
+  //* Xử lí ADD TO CART ở đây
+  const handleAddToCart = () => {
+    if (!isLoggedIn) return navigate("/auth");
+    // Thêm vào giỏ hàng
+  };
+
+  //* Xử lí BUY NOW ở đây
+  const handleBuyNow = () => {
+    if (!isLoggedIn) return navigate("/auth");
+    // Chuyển sang trang thanh toán
+  };
+
+  const handleGoToLearning = () => {
+    navigate(`/user/course-learning/${course.courseId}`);
+  };
+
   return (
     <div className="w-full lg:w-1/3 px-4 mt-8 lg:mt-0">
       <div className="lg:sticky lg:top-24">
@@ -43,14 +71,24 @@ function SidebarCourseDetail({ course }) {
               </span>
             </li>
           </ul>
-          <Link to={`/user/course-learning/${course.courseId}`}>
+          {!isLoggedIn || (isLoggedIn && !isEnrolled) ? (
+            <>
+              <Button type="primary" className="w-full mt-6" onClick={handleAddToCart}>
+                Add To Cart
+              </Button>
+              <Button className="w-full mt-2" onClick={handleBuyNow}>
+                Buy Now
+              </Button>
+            </>
+          ) : (
             <Button
               type="primary"
-              className="w-full mt-6 px-6 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-500 hover:scale-102 transition-all ease-in-out"
+              className="w-full mt-6"
+              onClick={handleGoToLearning}
             >
-              Enroll the course
+              Continue Study
             </Button>
-          </Link>
+          )}
         </div>
       </div>
     </div>
