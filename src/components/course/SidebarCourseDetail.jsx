@@ -6,6 +6,7 @@ import { checkEnrollment } from "../../api/courseApi";
 import useAuth from "../../utils/useAuth";
 
 function SidebarCourseDetail({ course }) {
+  localStorage.setItem("token", "test");
   const isLoggedIn = useAuth();
   const [isEnrolled, setIsEnrolled] = useState(false);
   const navigate = useNavigate();

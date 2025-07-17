@@ -273,8 +273,9 @@ function CourseLearning() {
     }
   };
 
-  // Khi quiz hoàn thành (pass), cập nhật progress
+  // Khi quiz hoàn thành (pass), cập nhật progress và cập nhật UI dấu tích
   const handleQuizCompleted = async (quizId) => {
+    setCompletedQuizzes((prev) => prev.includes(quizId) ? prev : [...prev, quizId]);
     await getProgress();
   };
 
