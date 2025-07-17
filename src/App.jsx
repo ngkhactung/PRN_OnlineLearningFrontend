@@ -5,12 +5,11 @@ import About from "./pages/About.jsx";
 import Courses from "./pages/Courses.jsx";
 import CourseDetails from "./pages/CourseDetails.jsx";
 import Contact from "./pages/Contact.jsx";
+import Profile from "./pages/user/Profile.jsx";
+import Cart from "./pages/user/Cart.jsx";
 import MainLayout from "./components/layouts/MainLayout.jsx";
 import CourseLearning from "./pages/user/CourseLearning.jsx";
-import Otp from "./pages/auth/Otp.jsx";
-import LearningLayout from "./components/layouts/LearningLayout.jsx";
 import MyLearning from "./pages/user/MyLearning.jsx";
-
 import ManaCourse from "./pages/admin/ManaCourse.jsx"
 import AddCourse from "./pages/admin/AddCourse.jsx"
 import EditCourse from "./pages/admin/EditCourse.jsx"
@@ -19,54 +18,65 @@ import ManaLesson from "./pages/admin/ManaLesson.jsx" // Import ManaLesson
 import ManaQuiz from "./pages/admin/ManaQuiz.jsx" // Import ManaQuiz
 import ManaQuestion from "./pages/admin/ManaQuestion.jsx" // Import ManaQuestion
 import AdminLayout from "./components/admin/AdminLayout.jsx"
+import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
+import { setAuthContextUpdate } from "./services/authService.js";
+import AccessDenied from "./pages/auth/AccessDenied.jsx";
+import { useEffect } from "react";
 
-const AdminDashboard = () => (
-  <div>
-    <h2 style={{ marginBottom: "16px" }}>Dashboard</h2>
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-        gap: "16px",
-      }}
-    >
+function AppContent() {
+  const { updateAuthState } = useAuth();
+  const AdminDashboard = () => (
+    <div>
+      <h2 style={{ marginBottom: "16px" }}>Dashboard</h2>
       <div
         style={{
-          padding: "24px",
-          background: "#f0f2f5",
-          borderRadius: "8px",
-          textAlign: "center",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: "16px",
         }}
       >
-        <h3>Tổng số khóa học</h3>
-        <p style={{ fontSize: "24px", fontWeight: "bold", color: "#1890ff" }}>0</p>
-      </div>
-      <div
-        style={{
-          padding: "24px",
-          background: "#f0f2f5",
-          borderRadius: "8px",
-          textAlign: "center",
-        }}
-      >
-        <h3>Học viên</h3>
-        <p style={{ fontSize: "24px", fontWeight: "bold", color: "#52c41a" }}>0</p>
-      </div>
-      <div
-        style={{
-          padding: "24px",
-          background: "#f0f2f5",
-          borderRadius: "8px",
-          textAlign: "center",
-        }}
-      >
-        <h3>Doanh thu tháng</h3>
-        <p style={{ fontSize: "24px", fontWeight: "bold", color: "#faad14" }}>0 VNĐ</p>
+        <div
+          style={{
+            padding: "24px",
+            background: "#f0f2f5",
+            borderRadius: "8px",
+            textAlign: "center",
+          }}
+        >
+          <h3>Tổng số khóa học</h3>
+          <p style={{ fontSize: "24px", fontWeight: "bold", color: "#1890ff" }}>0</p>
+        </div>
+        <div
+          style={{
+            padding: "24px",
+            background: "#f0f2f5",
+            borderRadius: "8px",
+            textAlign: "center",
+          }}
+        >
+          <h3>Học viên</h3>
+          <p style={{ fontSize: "24px", fontWeight: "bold", color: "#52c41a" }}>0</p>
+        </div>
+        <div
+          style={{
+            padding: "24px",
+            background: "#f0f2f5",
+            borderRadius: "8px",
+            textAlign: "center",
+          }}
+        >
+          <h3>Doanh thu tháng</h3>
+          <p style={{ fontSize: "24px", fontWeight: "bold", color: "#faad14" }}>0 VNĐ</p>
+        </div>
       </div>
     </div>
-  </div>
-)
-function App() {
+  );
+
+  useEffect(() => {
+    // Set the auth context update function for authService
+    setAuthContextUpdate(updateAuthState);
+  }, [updateAuthState]);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -76,22 +86,14 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:id" element={<CourseDetails />} />
           <Route path="/contact" element={<Contact />} />
-
-          {/* Required authentication */}
-          <Route
-            path="/user/my-learning/:myLearningTab"
-            element={<MyLearning />}
-          />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/user/my-learning/:myLearningTab" element={<MyLearning />} />
         </Route>
         <Route path="/auth" element={<Auth />} />
-        <Route path="/otp" element={<Otp />} />
-
-        {/* Required authentication */}
-        <Route
-          path="/user/course-learning/:courseId"
-          element={<CourseLearning />}
-        />
-
+        <Route path="/access-denied" element={<AccessDenied />} />
+        <Route path="/user/course-learning/:courseId" element={<CourseLearning />} />
+        
         {/* Admin routes với layout */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
@@ -112,6 +114,14 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
