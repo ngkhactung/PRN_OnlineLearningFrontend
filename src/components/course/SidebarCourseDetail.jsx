@@ -6,16 +6,18 @@ import { checkEnrollment } from "../../api/courseApi";
 import useAuth from "../../utils/useAuth";
 
 function SidebarCourseDetail({ course }) {
-  localStorage.setItem("token", "test");
   const isLoggedIn = useAuth();
   const [isEnrolled, setIsEnrolled] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoggedIn) {
-      checkEnrollment(course.courseId).then(setIsEnrolled);
+    if (isLoggedIn && course?.courseId) {
+      checkEnrollment(course.courseId).then((res) => {
+        console.log("Enrollment API result:", res);
+        setIsEnrolled(res);
+      });
     }
-  }, [isLoggedIn, course.courseId]);
+  }, [isLoggedIn, course?.courseId]);
 
   //* Xử lí ADD TO CART ở đây
   const handleAddToCart = () => {
@@ -32,7 +34,7 @@ function SidebarCourseDetail({ course }) {
   const handleGoToLearning = () => {
     navigate(`/user/course-learning/${course.courseId}`);
   };
-
+ console.log(isEnrolled);
   return (
     <div className="w-full lg:w-1/3 px-4 mt-8 lg:mt-0">
       <div className="lg:sticky lg:top-24">
@@ -74,7 +76,11 @@ function SidebarCourseDetail({ course }) {
           </ul>
           {!isLoggedIn || (isLoggedIn && !isEnrolled) ? (
             <>
-              <Button type="primary" className="w-full mt-6" onClick={handleAddToCart}>
+              <Button
+                type="primary"
+                className="w-full mt-6"
+                onClick={handleAddToCart}
+              >
                 Add To Cart
               </Button>
               <Button className="w-full mt-2" onClick={handleBuyNow}>
