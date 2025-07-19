@@ -4,7 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined, Question
 import axios from "axios"
 import { useParams, useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5293" // Backend URL
+const API_BASE_URL = "http://localhost:5000" // Backend URL
 
 function ManaQuiz() {
   const { courseId, moduleId } = useParams()
@@ -310,21 +310,38 @@ function ManaQuiz() {
           <Form.Item
             label="Tên Câu đố"
             name="quizName"
-            rules={[{ required: true, message: "Vui lòng nhập tên câu đố" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên câu đố" },
+              { max: 255, message: "Tên câu đố tối đa 255 ký tự" }
+            ]}
           >
             <Input placeholder="Nhập tên câu đố" />
           </Form.Item>
-          <Form.Item label="Thời gian làm bài (phút)" name="quizTime">
+          <Form.Item
+            label="Thời gian làm bài (phút)"
+            name="quizTime"
+            rules={[
+              { type: "number", min: 1, message: "Thời gian làm bài phải lớn hơn 0" }
+            ]}
+          >
             <InputNumber min={1} placeholder="Ví dụ: 30" style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item label="Điểm đạt" name="passScore">
+          <Form.Item
+            label="Điểm đạt"
+            name="passScore"
+            rules={[
+              { type: "number", min: 0, max: 100, message: "Điểm đạt phải từ 0 đến 100" }
+            ]}
+          >
             <InputNumber min={0} max={100} placeholder="Ví dụ: 70" style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item
             label="Trạng thái"
             name="status"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
-            initialValue={1} // Default to active for new quizzes
+            rules={[
+              { required: true, message: "Vui lòng chọn trạng thái" }
+            ]}
+            initialValue={1}
           >
             <Select placeholder="Chọn trạng thái">
               <Select.Option value={0}>Bản nháp</Select.Option>
