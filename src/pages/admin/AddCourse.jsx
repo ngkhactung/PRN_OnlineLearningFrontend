@@ -4,7 +4,7 @@ import { UploadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5293";
+const API_BASE_URL = "http://localhost:5000";
 
 function AddCourse() {
   const [form] = Form.useForm();
@@ -171,11 +171,21 @@ function AddCourse() {
                   <Form.Item
                     label="Tên khóa học"
                     name="courseName"
-                    rules={[{ required: true, message: "Vui lòng nhập tên khóa học" }]}
+                    rules={[
+                      { required: true, message: "Vui lòng nhập tên khóa học" },
+                      { max: 100, message: "Tên khóa học tối đa 100 ký tự" }
+                    ]}
                   >
                     <Input placeholder="Nhập tên khóa học" />
                   </Form.Item>
-                  <Form.Item label="Mô tả khóa học" name="description">
+                  <Form.Item
+                    label="Mô tả khóa học"
+                    name="description"
+                    rules={[
+                      { required: true, message: "Vui lòng nhập mô tả" },
+                      { max: 1000, message: "Mô tả tối đa 1000 ký tự" }
+                    ]}
+                  >
                     <Input.TextArea rows={4} placeholder="Nhập mô tả chi tiết về khóa học" />
                   </Form.Item>
                   <Form.Item
@@ -211,7 +221,9 @@ function AddCourse() {
                 <Form.Item
                   label="Ngôn ngữ"
                   name="languageId"
-                  rules={[{ required: true, message: "Vui lòng chọn ngôn ngữ" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng chọn ngôn ngữ" }
+                  ]}
                 >
                   <Select placeholder="Chọn ngôn ngữ" allowClear>
                     {languages.map((lang) => (
@@ -224,7 +236,9 @@ function AddCourse() {
                 <Form.Item
                   label="Cấp độ"
                   name="levelId"
-                  rules={[{ required: true, message: "Vui lòng chọn cấp độ" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng chọn cấp độ" }
+                  ]}
                 >
                   <Select placeholder="Chọn cấp độ" allowClear>
                     {levels.map((level) => (
@@ -237,7 +251,10 @@ function AddCourse() {
                 <Form.Item
                   label="Danh mục"
                   name="categoryId"
-                  rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng chọn danh mục" },
+                    { type: "array", min: 1, message: "Phải chọn ít nhất 1 danh mục" }
+                  ]}
                 >
                   <Select placeholder="Chọn danh mục" mode="multiple" allowClear>
                     {categories.map((cat) => (
@@ -263,7 +280,10 @@ function AddCourse() {
                 <Form.Item
                   label="Giá khóa học (VNĐ)"
                   name="price"
-                  rules={[{ required: true, message: "Vui lòng nhập giá khóa học" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập giá khóa học" },
+                    { type: "number", min: 0, message: "Giá phải lớn hơn hoặc bằng 0" }
+                  ]}
                 >
                   <Input type="number" placeholder="0" min={0} />
                 </Form.Item>

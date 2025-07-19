@@ -6,7 +6,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, BookOutlined } from "@ant-d
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5293" // Backend URL
+const API_BASE_URL = "http://localhost:5000" // Backend URL
 
 function ManaCourse() {
   const [courses, setCourses] = useState([])
