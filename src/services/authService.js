@@ -1,72 +1,5 @@
-import axios from 'axios';
+import api, { setAuthContextUpdate } from './apiClient';
 import API_CONFIG from '../config/api';
-
-// Create axios instance with default config
-const api = axios.create({
-  baseURL: API_CONFIG.BASE_URL,
-  timeout: API_CONFIG.TIMEOUT,
-  headers: API_CONFIG.DEFAULT_HEADERS,
-});
-
-// Store reference to auth context update function
-let authContextUpdateFunction = null;
-
-// Function to set auth context update function
-export const setAuthContextUpdate = (updateFunction) => {
-  authContextUpdateFunction = updateFunction;
-};
-
-// Function to handle 401 - Unauthorized
-const handle401 = () => {
-  // Clear localStorage
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  
-  // Update auth context
-  if (authContextUpdateFunction) {
-    authContextUpdateFunction(false);
-  }
-  
-  // Redirect to login
-  window.location.href = '/auth';
-};
-
-// Function to handle 403 - Forbidden
-const handle403 = () => {
-  // Redirect to access denied page
-  window.location.href = '/access-denied';
-};
-
-// Add request interceptor to include auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor to handle responses
-api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    // Check HTTP status codes
-    if (error.response?.status === 401) {
-      handle401();
-    } else if (error.response?.status === 403) {
-      handle403();
-    }
-    
-    return Promise.reject(error);
-  }
-);
 
 // Auth Service
 export const authService = {
@@ -290,63 +223,6 @@ export const authService = {
     }
   },
 
-  // Profile functions
-  async getProfile() {
-    try {
-      const response = await api.get(API_CONFIG.ENDPOINTS.USER.PROFILE);
-      
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message,
-        };
-      } else {
-        return {
-          success: false,
-          message: response.data.message || 'Failed to get profile',
-        };
-      }
-    } catch (error) {
-      console.error('Get profile error:', error);
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Failed to get profile. Please try again.',
-      };
-    }
-  },
-
-  async updateProfile(profileData) {
-    try {
-      const response = await api.put(API_CONFIG.ENDPOINTS.USER.UPDATE_PROFILE, {
-        fullName: profileData.fullName,
-        doB: profileData.doB,
-        gender: profileData.gender,
-        phone: profileData.phone,
-        address: profileData.address,
-        avatarUrl: profileData.avatarUrl,
-      });
-      
-      if (response.data.success) {
-        return {
-          success: true,
-          message: response.data.message || 'Profile updated successfully.',
-        };
-      } else {
-        return {
-          success: false,
-          message: response.data.message || 'Failed to update profile',
-        };
-      }
-    } catch (error) {
-      console.error('Update profile error:', error);
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Failed to update profile. Please try again.',
-      };
-    }
-  },
-
   // Utility functions
   getToken() {
     return localStorage.getItem('token');
@@ -368,6 +244,5 @@ export const authService = {
   },
 };
 
-export { api };
-
+export { setAuthContextUpdate };
 export default authService;

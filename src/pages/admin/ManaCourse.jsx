@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Table, Button, message, Popconfirm, Space, Image } from "antd"
 import { PlusOutlined, EditOutlined, DeleteOutlined, BookOutlined } from "@ant-design/icons"
-import { api } from "../../services/authService"
+import { api } from "../../services/apiClient"
 import { useNavigate } from "react-router-dom"
 
 const API_BASE_URL = "https://localhost:5000" // Backend URL

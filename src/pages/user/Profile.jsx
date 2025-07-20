@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, Radio, DatePicker, Avatar, notification } from 'antd';
 import { toast, ToastContainer } from 'react-toastify';
 import { UserOutlined, LockOutlined, EditOutlined, SaveOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import { useAuth } from '../../contexts/AuthContext';
-import authService from '../../services/authService';
+import profileService from '../../services/profileService';
 import ChangePassword from './ChangePassword';
 import dayjs from 'dayjs';
 
@@ -14,12 +13,12 @@ function Profile() {
   const [activeTab, setActiveTab] = useState('profile');
 
   useEffect(() => {
-      fetchProfile();
-  });
+    fetchProfile();
+  }, []);
 
   const fetchProfile = async () => {
     try {
-      const result = await authService.getProfile();
+      const result = await profileService.getProfile();
       if (result.success) {
         setProfileData(result.data);
         // Set form values
@@ -50,7 +49,7 @@ function Profile() {
         avatarUrl: profileData?.avatarUrl || null,
       };
 
-      const result = await authService.updateProfile(profileUpdateData);
+      const result = await profileService.updateProfile(profileUpdateData);
 
       if (result.success) {
         toast.success(result.message);

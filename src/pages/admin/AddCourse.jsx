@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Form, Input, Button, Select, message, Upload, Card, Space, Row, Col, InputNumber } from "antd";
 import { UploadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import { api } from "../../services/authService";
+import { api } from "../../services/apiClient";
 import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = "https://localhost:5000";

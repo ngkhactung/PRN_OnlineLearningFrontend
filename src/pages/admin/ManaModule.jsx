@@ -8,7 +8,7 @@ import {
   BookOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons"
-import { api } from "../../services/authService"
+import { api } from "../../services/apiClient"
 import { useParams, useNavigate } from "react-router-dom"
 
 const API_BASE_URL = "https://localhost:5000" // Backend URL

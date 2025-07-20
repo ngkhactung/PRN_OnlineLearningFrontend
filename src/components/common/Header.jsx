@@ -42,6 +42,18 @@ function Header() {
 
   const handleMyProfile = () => {
     setShowUserMenu(false);
+
+    // Debug token before navigation
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    console.log('=== Profile Navigation Debug ===');
+    console.log('Token exists:', !!token);
+    console.log('Token value:', token ? token.substring(0, 50) + '...' : 'null');
+    console.log('User data:', user);
+    console.log('Is authenticated:', isAuthenticated);
+    console.log('================================');
+
     navigate('/profile');
   };
 

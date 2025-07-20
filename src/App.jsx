@@ -19,7 +19,7 @@ import ManaQuiz from "./pages/admin/ManaQuiz.jsx"; // Import ManaQuiz
 import ManaQuestion from "./pages/admin/ManaQuestion.jsx"; // Import ManaQuestion
 import AdminLayout from "./components/admin/AdminLayout.jsx";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
-import { setAuthContextUpdate } from "./services/authService.js";
+import { setAuthContextUpdate } from "./services/apiClient.js";
 import AccessDenied from "./pages/auth/AccessDenied.jsx";
 import { useEffect } from "react";
 import PrivateRoute from "./components/PrivateRoute.jsx";
@@ -94,14 +94,14 @@ function AppContent() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:id" element={<CourseDetails />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/cart" element={<Cart />} />
           {/* Các route cần đăng nhập */}
           <Route element={<PrivateRoute />}>
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/cart" element={<Cart />} />
             <Route
-            path="/user/my-learning/:myLearningTab"
-            element={<MyLearning />}
-          />
+              path="/user/my-learning/:myLearningTab"
+              element={<MyLearning />}
+            />
           </Route>
         </Route>
         <Route element={<PrivateRoute />}>
