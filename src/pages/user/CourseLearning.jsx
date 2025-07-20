@@ -2,7 +2,11 @@ import { Layout, Menu, Button, Empty, Alert, Spin } from "antd";
 import { useState, useEffect } from "react";
 import { CheckOutlined, ReadOutlined, FormOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
-import { fetchCourseData, fetchProgress, markLessonAsCompleted } from "../../api/courseApi";
+import {
+  fetchCourseData,
+  fetchProgress,
+  markLessonAsCompleted,
+} from "../../api/courseApi";
 import {
   getQuizById,
   submitQuiz,
@@ -13,7 +17,6 @@ const { Sider } = Layout;
 import Learning from "../../components/course/Learning";
 import HeaderLearning from "../../components/course/HeaderLearning";
 import Quiz from "../../components/course/Quizzes";
-
 
 function CourseLearning() {
   const [course, setCourse] = useState(null);
@@ -90,7 +93,10 @@ function CourseLearning() {
             // Gọi API kiểm tra trạng thái từng quiz
             Promise.all(
               quizIds.map((quizId) =>
-                getQuizResult(baseURL, quizId).then((res) => ({ quizId, isPassed: res?.data?.isPassed }))
+                getQuizResult(baseURL, quizId).then((res) => ({
+                  quizId,
+                  isPassed: res?.data?.isPassed,
+                }))
               )
             ).then((results) => {
               setCompletedQuizzes(
@@ -180,7 +186,6 @@ function CourseLearning() {
     }
   };
 
-
   //* Set selected lesson or quiz
   useEffect(() => {
     if (course && course.modules && course.modules.length > 0) {
@@ -267,7 +272,9 @@ function CourseLearning() {
 
   // Khi quiz hoàn thành (pass), cập nhật progress và cập nhật UI dấu tích
   const handleQuizCompleted = async (quizId) => {
-    setCompletedQuizzes((prev) => prev.includes(quizId) ? prev : [...prev, quizId]);
+    setCompletedQuizzes((prev) =>
+      prev.includes(quizId) ? prev : [...prev, quizId]
+    );
     await getProgress();
   };
 
@@ -345,7 +352,11 @@ function CourseLearning() {
     console.log("Khóa học này chưa có nội dung");
     return (
       <Layout className="min-h-screen flex flex-col overflow-hidden">
-        <HeaderLearning course={course} progress={progress} completedLessons={completedLessons} />
+        <HeaderLearning
+          course={course}
+          progress={progress}
+          completedLessons={completedLessons}
+        />
         <div className="flex-1 flex justify-center items-center">
           <Empty description="Khóa học này chưa có nội dung" />
         </div>
@@ -357,7 +368,11 @@ function CourseLearning() {
     console.log("Khóa học này chưa có bài học nào");
     return (
       <Layout className="min-h-screen flex flex-col overflow-hidden">
-        <HeaderLearning course={course} progress={progress} completedLessons={completedLessons} />
+        <HeaderLearning
+          course={course}
+          progress={progress}
+          completedLessons={completedLessons}
+        />
         <div className="flex-1 flex justify-center items-center">
           <Empty description="Khóa học này chưa có nội dung" />
         </div>
@@ -417,23 +432,44 @@ function CourseLearning() {
   return (
     <Layout className="min-h-screen flex flex-col overflow-hidden">
       {/* Header cố định */}
-      <HeaderLearning course={course} progress={progress} completedLessons={completedLessons} />
+      <HeaderLearning
+        course={course}
+        progress={progress}
+        completedLessons={completedLessons}
+      />
       <Layout hasSider className="h-[calc(100vh-80px-64px)] overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="flex-1 overflow-y-auto">
-            {selectedLesson && <Learning lesson={selectedLesson} onLessonCompleted={handleLessonCompleted} />}
-            {selectedQuiz && (
-              <Quiz
-                quizId={selectedQuiz.quizId}
-                moduleId={selectedQuiz.moduleId}
-                fetchQuiz={getQuizById}
-                submitQuiz={submitQuiz}
-                getQuizResult={getQuizResult}
-                completeQuiz={completeQuiz}
-                onQuizCompleted={handleQuizCompleted}
-                onQuizCancelled={handleQuizCancelled}
-                baseURL={baseURL}
+            {selectedLesson && (
+              <Learning
+                lesson={selectedLesson}
+                onLessonCompleted={handleLessonCompleted}
               />
+            )}
+            {selectedQuiz &&
+              !completedQuizzes.includes(selectedQuiz.quizId) && (
+                <Quiz
+                  quizId={selectedQuiz.quizId}
+                  moduleId={selectedQuiz.moduleId}
+                  fetchQuiz={getQuizById}
+                  submitQuiz={submitQuiz}
+                  getQuizResult={getQuizResult}
+                  completeQuiz={completeQuiz}
+                  onQuizCompleted={handleQuizCompleted}
+                  onQuizCancelled={handleQuizCancelled}
+                  baseURL={baseURL}
+                />
+              )}
+            {selectedQuiz && completedQuizzes.includes(selectedQuiz.quizId) && (
+              <div className="p-8">
+                <Alert
+                  message="You've completed this quiz!"
+                  description="Your results have been saved. You can't retake this quiz."
+                  type="success"
+                  showIcon
+                />
+                {/* Có thể hiển thị kết quả quiz ở đây nếu muốn */}
+              </div>
             )}
           </div>
         </div>
