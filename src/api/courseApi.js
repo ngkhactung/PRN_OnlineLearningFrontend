@@ -63,7 +63,6 @@ export async function checkEnrollment(courseId) {
 }
 
 export const fetchSpecialCourses = async () => {
-  const token = getToken();
   const queryParams = new URLSearchParams();
   queryParams.append("Page", "1");
   queryParams.append("PageSize", "3");
@@ -77,3 +76,28 @@ export const fetchSpecialCourses = async () => {
   }
   return [];
 };
+
+export async function fetchCoursesEnroll(tab) {
+  const token = getToken();
+  if (!token) return { success: false, data: [], error: "No token found" };
+  
+  try {
+    const response = await fetch(
+      `${baseURL}/courses/my-learning/${tab}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      return { success: false, data: [], error: "Failed to fetch courses" };
+    }
+    
+    const responseData = await response.json();
+    return { success: true, data: responseData.data || [], error: null };
+  } catch (error) {
+    return { success: false, data: [], error: error.message };
+  }
+}

@@ -7,6 +7,7 @@ import {
   ClockCircleOutlined,
   CheckOutlined,
 } from "@ant-design/icons";
+import QuizConfirmation from "./QuizConfirmation";
 
 const { Content } = Layout;
 
@@ -17,6 +18,7 @@ function Quiz({
   getQuizResult,
   completeQuiz,
   onQuizCompleted,
+  onQuizCancelled,
   moduleId,
   baseURL,
 }) {
@@ -30,9 +32,11 @@ function Quiz({
   const [submitting, setSubmitting] = useState(false);
   const [canRetry, setCanRetry] = useState(false);
   const [initialResultChecked, setInitialResultChecked] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(false);
   const timerRef = useRef();
 
-  // Kiểm tra trạng thái quiz trước khi render
+  // Check quiz status before rendering
   useEffect(() => {
     let ignore = false;
     async function checkResultAndLoadQuiz() {
@@ -43,27 +47,31 @@ function Quiz({
       setAnswers([]);
       setCanRetry(false);
       setInitialResultChecked(false);
+      setQuizStarted(false);
       try {
-        // Ưu tiên quizId, fallback moduleId
+        // Prioritize quizId, fallback to moduleId
         const id = quizId || (moduleId ? (await fetchQuiz(baseURL, moduleId)).data.quizId : null);
         if (!id) {
           setLoading(false);
           return;
         }
-        // 1. Kiểm tra kết quả quiz trước
+        // 1. Check quiz result first
         const res = await getQuizResult(baseURL, id);
         if (!ignore && res.success && res.data) {
           setResult(res.data);
           setShowResult(true);
-          setCanRetry(!res.data.isPassed); // Nếu pass thì không cho làm lại, fail thì cho làm lại
+          setCanRetry(!res.data.isPassed); // If passed, don't allow retry, if failed, allow retry
           setInitialResultChecked(true);
+          setQuizStarted(true); // Quiz already completed, so it's considered "started"
         } else {
           setShowResult(false);
           setResult(null);
           setCanRetry(false);
           setInitialResultChecked(true);
+          // Show confirmation for new quiz
+          setShowConfirmation(true);
         }
-        // 2. Luôn load quiz để lấy câu hỏi, thời gian
+        // 2. Always load quiz to get questions, time
         const quizData = moduleId
           ? await fetchQuiz(baseURL, moduleId)
           : await fetchQuiz(baseURL, quizId);
@@ -85,9 +93,9 @@ function Quiz({
     // eslint-disable-next-line
   }, [quizId, moduleId]);
 
-  // Đếm ngược thời gian
+  // Countdown timer
   useEffect(() => {
-    if (!quiz || showResult) return;
+    if (!quiz || showResult || !quizStarted) return;
     if (timeLeft <= 0) {
       handleSubmit();
       return;
@@ -103,9 +111,9 @@ function Quiz({
     }, 1000);
     return () => clearInterval(timerRef.current);
     // eslint-disable-next-line
-  }, [quiz, showResult, timeLeft]);
+  }, [quiz, showResult, timeLeft, quizStarted]);
 
-  // Chuyển đổi giây sang mm:ss
+  // Convert seconds to mm:ss
   const formatTime = (sec) => {
     const m = Math.floor(sec / 60)
       .toString()
@@ -114,14 +122,14 @@ function Quiz({
     return `${m}:${s}`;
   };
 
-  // Chọn đáp án
+  // Select answer
   const handleAnswerChange = (qIdx, optionId) => {
     const newAnswers = [...answers];
     newAnswers[qIdx] = optionId;
     setAnswers(newAnswers);
   };
 
-  // Nộp bài
+  // Submit quiz
   const handleSubmit = async () => {
     if (submitting || !quiz) return;
     setSubmitting(true);
@@ -143,18 +151,45 @@ function Quiz({
     }
   };
 
-  // Làm lại quiz
+  // Retry quiz
   const handleRetry = () => {
     setAnswers(Array(quiz.questions.length).fill(null));
     setShowResult(false);
     setResult(null);
     setTimeLeft(timer);
+    setQuizStarted(true);
   };
 
-  if (loading || !initialResultChecked) return <div className="text-center py-10">Đang tải quiz...</div>;
-  if (!quiz) return <Alert type="error" message="Không tìm thấy quiz" showIcon />;
+  // Handle quiz confirmation
+  const handleConfirmQuiz = () => {
+    setShowConfirmation(false);
+    setQuizStarted(true);
+  };
 
-  // Nếu có kết quả và pass, chỉ hiển thị kết quả, không cho làm lại
+  const handleCancelQuiz = () => {
+    setShowConfirmation(false);
+    if (typeof onQuizCancelled === "function") {
+      onQuizCancelled();
+    }
+  };
+
+  if (loading || !initialResultChecked) return <div className="text-center py-10">Loading quiz...</div>;
+  if (!quiz) return <Alert type="error" message="Quiz not found" showIcon />;
+
+  // Show confirmation modal if quiz hasn't been started
+  if (showConfirmation) {
+    return (
+      <QuizConfirmation
+        visible={showConfirmation}
+        quiz={quiz}
+        onConfirm={handleConfirmQuiz}
+        onCancel={handleCancelQuiz}
+        loading={loading}
+      />
+    );
+  }
+
+  // If there's a result and passed, only show result, don't allow retry
   if (showResult && result && result.isPassed && !canRetry) {
     return (
       <Content className="flex-1 overflow-y-auto px-2 md:px-8 py-8">
@@ -162,13 +197,19 @@ function Quiz({
           <Card bordered className="mb-6 text-center">
             <div className="flex flex-col items-center gap-2">
               <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: 48 }} />
-              <h2 className="text-2xl font-bold text-green-700 mt-2 mb-1">Đã hoàn thành Quiz!</h2>
-              <Tag color="green" className="text-base">Đã Pass</Tag>
+              <h2 className="text-2xl font-bold text-green-700 mt-2 mb-1">Quiz Completed!</h2>
+              <Tag color="green" className="text-base">Passed</Tag>
               <Divider />
-              <Statistic title="Điểm số" value={result.score} suffix={`/ ${quiz.passScore}`} />
-              <Statistic title="Số câu đúng" value={`${result.correctAnswers}/${result.totalQuestions}`} />
+              <Statistic title="Score" value={result.score} />
+              <Statistic title="Passing Score" value={quiz.passScore} />
+              <Statistic
+                title="Correct Answers"
+                value={result.correctAnswers}
+                suffix={`/ ${result.totalQuestions}`}
+              />
+
               <Divider />
-              <div className="text-gray-600">Bạn đã vượt qua quiz này. Chúc mừng!</div>
+              <div className="text-gray-600">You have passed this quiz. Congratulations!</div>
             </div>
           </Card>
         </div>
@@ -179,29 +220,29 @@ function Quiz({
   return (
     <Content className="flex-1 overflow-y-auto px-2 md:px-8 py-8">
       <div className="max-w-2xl mx-auto">
-        {/* Header Quiz */}
+        {/* Quiz Header */}
         <Card bordered className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
             <div className="flex items-center gap-2">
               <FormOutlined className="text-purple-500 text-xl" />
               <span className="text-xl font-bold">{quiz.quizName || "Quiz"}</span>
               {result?.isPassed ? (
-                <Tag color="green">Đã Pass</Tag>
+                <Tag color="green">Passed</Tag>
               ) : result ? (
-                <Tag color="red">Chưa Pass</Tag>
+                <Tag color="red">Failed</Tag>
               ) : null}
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-gray-600">Tổng số câu: <b>{quiz.questions.length}</b></span>
-              <span className="text-gray-600">Điểm đạt: <b>{quiz.passScore}</b></span>
-              {!result?.isPassed && (
+              <span className="text-gray-600">Total Questions: <b>{quiz.questions.length}</b></span>
+              <span className="text-gray-600">Passing Score: <b>{quiz.passScore}</b></span>
+              {!result?.isPassed && quizStarted && (
                 <span className="flex items-center text-red-500"><ClockCircleOutlined className="mr-1" />{formatTime(timeLeft)}</span>
               )}
             </div>
           </div>
         </Card>
 
-        {/* Nếu đã nộp bài, hiển thị kết quả */}
+        {/* If quiz submitted, show results */}
         {showResult && result && (
           <Card bordered className="mb-6 text-center">
             <div className="flex flex-col items-center gap-2">
@@ -210,35 +251,35 @@ function Quiz({
               ) : (
                 <CloseCircleTwoTone twoToneColor="#ff4d4f" style={{ fontSize: 40 }} />
               )}
-              <h3 className={`text-lg font-bold ${result.isPassed ? "text-green-700" : "text-red-700"}`}>{result.isPassed ? "Bạn đã vượt qua quiz!" : "Bạn chưa đạt, hãy thử lại."}</h3>
+              <h3 className={`text-lg font-bold ${result.isPassed ? "text-green-700" : "text-red-700"}`}>{result.isPassed ? "You have passed the quiz!" : "You didn't pass, please try again."}</h3>
               <div className="flex flex-wrap justify-center gap-4 mt-2">
-                <Statistic title="Điểm số" value={result.score} suffix={`/ ${quiz.passScore}`} />
-                <Statistic title="Số câu đúng" value={`${result.correctAnswers}/${result.totalQuestions}`} />
+                <Statistic title="Score" value={result.score} suffix={`/ ${quiz.passScore}`} />
+                <Statistic title="Correct Answers" value={`${result.correctAnswers}/${result.totalQuestions}`} />
               </div>
               <Divider />
               {canRetry && (
-                <Button onClick={handleRetry} type="primary">Làm lại</Button>
+                <Button onClick={handleRetry} type="primary">Retry</Button>
               )}
             </div>
           </Card>
         )}
 
-        {/* Nếu chưa nộp bài, hiển thị form quiz */}
-        {!showResult && (
+        {/* If not submitted and quiz started, show quiz form */}
+        {!showResult && quizStarted && (
           <>
             {/* Progress Bar */}
             <div className="mb-6">
               <Progress percent={Math.round((answers.filter((a) => a !== null).length / quiz.questions.length) * 100)} showInfo={false} strokeColor="#722ed1" />
               <div className="flex justify-between text-sm text-gray-500 mt-1">
-                <span>Câu đã trả lời: {answers.filter((a) => a !== null).length}/{quiz.questions.length}</span>
-                <span>Thời gian còn lại: <b>{formatTime(timeLeft)}</b></span>
+                <span>Answered: {answers.filter((a) => a !== null).length}/{quiz.questions.length}</span>
+                <span>Time remaining: <b>{formatTime(timeLeft)}</b></span>
               </div>
             </div>
             {/* Questions */}
             {quiz.questions.map((q, idx) => (
               <Card key={q.questionId} className="shadow-lg border-0 mb-6">
                 <div className="mb-4 flex items-start">
-                  <span className="font-semibold text-purple-600 mr-2">Câu {idx + 1}:</span>
+                  <span className="font-semibold text-purple-600 mr-2">Question {idx + 1}:</span>
                   <span className="text-base font-medium text-gray-800 leading-relaxed">{q.question}</span>
                 </div>
                 <Radio.Group
@@ -254,8 +295,8 @@ function Quiz({
                           <div className={`w-full p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer
                             ${answers[idx] === opt.optionId && !showResult ? "border-purple-500 bg-purple-50" :
                               showResult && result && result.correctAnswers && result.correctAnswers[idx] === opt.optionId ? "border-green-500 bg-green-50" :
-                              showResult && answers[idx] === opt.optionId && result && result.correctAnswers && result.correctAnswers[idx] !== opt.optionId ? "border-red-500 bg-red-50" :
-                              "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}
+                                showResult && answers[idx] === opt.optionId && result && result.correctAnswers && result.correctAnswers[idx] !== opt.optionId ? "border-red-500 bg-red-50" :
+                                  "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}
                           `}>
                             <div className="flex items-center justify-between">
                               <span className="text-base text-gray-700">{opt.content}</span>
@@ -274,10 +315,10 @@ function Quiz({
                 </Radio.Group>
               </Card>
             ))}
-            {/* Nút nộp bài */}
+            {/* Submit button */}
             <div className="flex flex-col items-center gap-4 mt-8">
               <Button type="primary" size="large" disabled={answers.some(a => a === null) || submitting} onClick={handleSubmit}>
-                Nộp bài
+                Submit Quiz
               </Button>
             </div>
           </>

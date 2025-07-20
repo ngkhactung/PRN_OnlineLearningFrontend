@@ -97,13 +97,14 @@ function AppContent() {
           <Route element={<PrivateRoute />}>
             <Route path="/profile" element={<Profile />} />
             <Route path="/cart" element={<Cart />} />
-          </Route>
-        </Route>
-        <Route element={<PrivateRoute />}>
-          <Route
+            <Route
             path="/user/my-learning/:myLearningTab"
             element={<MyLearning />}
           />
+          </Route>
+        </Route>
+        <Route element={<PrivateRoute />}>
+          
           <Route
             path="/user/course-learning/:courseId"
             element={<CourseLearning />}

@@ -5,7 +5,6 @@ import { useParams } from "react-router-dom";
 import { fetchCourseData, fetchProgress, markLessonAsCompleted } from "../../api/courseApi";
 import {
   getQuizById,
-  getQuizByModuleId,
   submitQuiz,
   getQuizResult,
   completeQuiz,
@@ -26,14 +25,7 @@ function CourseLearning() {
   const { courseId } = useParams();
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
-  const questions = [
-    {
-      question: "ABC is acbd?",
-      options: ["Option A", "Option B", "Option C"],
-      correct: 1, // index của đáp án đúng
-    },
-    // ... các câu hỏi khác
-  ];
+
   const baseURL = import.meta.env.VITE_API_BASE_URL;
   // Hàm tìm lesson tiếp theo sau lesson cuối cùng đã hoàn thành
   const findNextLesson = (modules, lessonIdCompleted) => {
@@ -279,6 +271,29 @@ function CourseLearning() {
     await getProgress();
   };
 
+  // Handle quiz cancellation - go back to previous lesson
+  const handleQuizCancelled = () => {
+    if (currentIndex > 0) {
+      const prevItem = allMenuItems[currentIndex - 1];
+      if (prevItem.type === "lesson") {
+        setSelectedLesson(prevItem.data);
+        setSelectedQuiz(null);
+      } else if (prevItem.type === "quiz") {
+        setSelectedQuiz(prevItem.data);
+        setSelectedLesson(null);
+      }
+    } else {
+      // If no previous item, go to first lesson
+      if (course && course.modules && course.modules.length > 0) {
+        const firstModule = course.modules[0];
+        if (firstModule.lessons && firstModule.lessons.length > 0) {
+          setSelectedLesson(firstModule.lessons[0]);
+          setSelectedQuiz(null);
+        }
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -416,6 +431,7 @@ function CourseLearning() {
                 getQuizResult={getQuizResult}
                 completeQuiz={completeQuiz}
                 onQuizCompleted={handleQuizCompleted}
+                onQuizCancelled={handleQuizCancelled}
                 baseURL={baseURL}
               />
             )}

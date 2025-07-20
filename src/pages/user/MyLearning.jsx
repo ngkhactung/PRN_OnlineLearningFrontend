@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Progress, Empty, Button, Spin } from "antd";
 import img from "../../assets/img/special_cource_1.png";
+import { fetchCoursesEnroll } from "../../api/courseApi";
 
 function MyLearning() {
-  const baseURL = import.meta.env.VITE_API_BASE_URL;
   const { myLearningTab } = useParams();
   const navigate = useNavigate();
 
@@ -14,21 +14,17 @@ function MyLearning() {
   const [activeTab, setActiveTab] = useState(myLearningTab || "in-progress");
 
   // Fetch courses theo tab
-  const fetchCoursesEnroll = async (tab) => {
+  const fetchCoursesEnrollData = async (tab) => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(
-        `${baseURL}/courses/my-learning?userId=U07de5297&progress=${tab}`
-      );
-      if (!response.ok) {
-        setError("Failed to fetch courses");
+      const result = await fetchCoursesEnroll(tab);
+      if (!result.success) {
+        setError(result.error);
         setCourses([]);
-        setLoading(false);
         return;
       }
-      const responseData = await response.json();
-      setCourses(responseData.data || []);
+      setCourses(result.data);
     } catch (error) {
       setError(error.message);
       setCourses([]);
@@ -41,7 +37,7 @@ function MyLearning() {
   useEffect(() => {
     const tab = myLearningTab === "completed" ? "completed" : "in-progress";
     setActiveTab(tab);
-    fetchCoursesEnroll(tab);
+    fetchCoursesEnrollData(tab);
   }, [myLearningTab]);
 
   // Xử lý khi click tab
@@ -77,10 +73,9 @@ function MyLearning() {
         <button
           className={`border border-gray-700 rounded-3xl p-2 text-xs text-gray-700 
           active:bg-orange-400 active:text-white 
-            ${
-              activeTab === "in-progress"
-                ? "bg-gray-500 text-white border-gray-500 hover:border-orange-500 hover:bg-orange-500 hover:text-white"
-                : "hover:border-orange-500 hover:bg-gray-100 hover:text-orange-500 "
+            ${activeTab === "in-progress"
+              ? "bg-gray-500 text-white border-gray-500 hover:border-orange-500 hover:bg-orange-500 hover:text-white"
+              : "hover:border-orange-500 hover:bg-gray-100 hover:text-orange-500 "
             }`}
           onClick={() => handleTabChange("in-progress")}
         >
@@ -89,10 +84,9 @@ function MyLearning() {
         <button
           className={`border border-gray-700 rounded-3xl p-2 text-xs text-gray-700 
           active:bg-orange-400 active:text-white 
-            ${
-              activeTab === "completed"
-                ? "bg-gray-500 text-white border-gray-500 hover:border-orange-500 hover:bg-orange-500 hover:text-white"
-                : "hover:border-orange-500 hover:bg-gray-100 hover:text-orange-500 "
+            ${activeTab === "completed"
+              ? "bg-gray-500 text-white border-gray-500 hover:border-orange-500 hover:bg-orange-500 hover:text-white"
+              : "hover:border-orange-500 hover:bg-gray-100 hover:text-orange-500 "
             }`}
           onClick={() => handleTabChange("completed")}
         >
@@ -103,11 +97,8 @@ function MyLearning() {
         <div>
           <Empty
             className="flex flex-col items-center justify-center m-10 mb-20"
-            description="Bạn chưa đăng ký khóa học nào"
+            description="Chưa có khóa học"
           >
-            <Link to={"/courses"}>
-              <Button type="primary">Học luôn !</Button>
-            </Link>
           </Empty>
         </div>
       ) : (
