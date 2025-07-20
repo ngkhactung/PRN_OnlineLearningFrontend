@@ -101,3 +101,24 @@ export async function fetchCoursesEnroll(tab) {
     return { success: false, data: [], error: error.message };
   }
 }
+
+export async function enrollCourse(courseId) {
+  const token = getToken();
+  if (!token) return { success: false, message: "No token found" };
+  try {
+    const res = await fetch(`${baseURL}/courses/enroll/${courseId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      return { success: true, message: data.message };
+    } else {
+      return { success: false, message: data.message || "Đăng ký thất bại" };
+    }
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
