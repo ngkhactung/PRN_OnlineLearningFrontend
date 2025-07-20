@@ -1,24 +1,66 @@
-import axios from "axios";
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-export const checkEnrollment = async (courseId) => {
-  const token = localStorage.getItem("token");
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+function getToken(){
+  return localStorage.getItem("token");
+}
+export async function fetchCourseData(courseId) {
+  const token = getToken();
+  if (!token) return false;
+  const res = await fetch(`${baseURL}/courses/learning/${courseId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.json();
+}
+
+export async function fetchProgress(courseId) {
+  const token = getToken();
+  if (!token) return false;
+  const res = await fetch(`${baseURL}/courses/progress/${courseId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.json();
+}
+
+export async function markLessonAsCompleted(lessonId) {
+  const token = getToken();
+  if (!token) return false;
+  const res = await fetch(`${baseURL}/courses/mark-as-completed/${lessonId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.json();
+}
+
+export async function checkEnrollment(courseId) {
+  const token = getToken();
   if (!token) return false;
   try {
-    const res = await axios.get(
-      `${baseUrl}/courses/enrollment/${courseId}`,
+    const res = await fetch(`${baseURL}/courses/enrollment/${courseId}`,
       {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
-    return res.data;
+    const resData = await res.json();
+    return resData.data; // <-- trả về đúng boolean
   } catch (err) {
     console.error("Error checking enrollment:", err);
     return false;
   }
-};
+}
 
 export const fetchSpecialCourses = async () => {
   const queryParams = new URLSearchParams();
@@ -27,10 +69,35 @@ export const fetchSpecialCourses = async () => {
   queryParams.append("SortBy", "Popular");
   queryParams.append("SortOrder", "desc");
 
-  const response = await fetch(`${baseUrl}/courses/filter?${queryParams.toString()}`);
+  const response = await fetch(`${baseURL}/courses/filter?${queryParams.toString()}`);
   const result = await response.json();
   if (result.success) {
     return result.data.dataPaginated;
   }
   return [];
 };
+
+export async function fetchCoursesEnroll(tab) {
+  const token = getToken();
+  if (!token) return { success: false, data: [], error: "No token found" };
+  
+  try {
+    const response = await fetch(
+      `${baseURL}/courses/my-learning/${tab}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      return { success: false, data: [], error: "Failed to fetch courses" };
+    }
+    
+    const responseData = await response.json();
+    return { success: true, data: responseData.data || [], error: null };
+  } catch (error) {
+    return { success: false, data: [], error: error.message };
+  }
+}

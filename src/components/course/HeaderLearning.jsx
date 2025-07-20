@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Progress, Layout } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-function HeaderLearning({ course,completedLessons }) {
+function HeaderLearning({ course,completedLessons,progress }) {
   return (
     <>
       {/* Header cố định */}
@@ -23,7 +23,7 @@ function HeaderLearning({ course,completedLessons }) {
             type="circle"
             size={50}
             strokeColor="#1677ff"
-            percent={course.progress || 0}
+            percent={progress || 0}
             format={(percent) => <span style={{ color: "white" }}>{percent}%</span>}
           />
 

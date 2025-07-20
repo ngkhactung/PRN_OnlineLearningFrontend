@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { ShoppingCartOutlined, UserOutlined, LogoutOutlined, ProfileOutlined } from "@ant-design/icons";
+import { ShoppingCartOutlined, UserOutlined, LogoutOutlined, ProfileOutlined,ReadOutlined } from "@ant-design/icons";
 import { useAuth } from "../../contexts/AuthContext";
 import authService from "../../services/authService";
 import logo from "../../assets/img/logo.png";
@@ -48,6 +48,11 @@ function Header() {
   const handleMyCart = () => {
     setShowUserMenu(false);
     navigate('/cart');
+  };
+
+  const handleMyLearning = () => {
+    setShowUserMenu(false);
+    navigate("/user/my-learning/in-progress"); // chuyển đến tab đang học mặc định
   };
 
   const toggleUserMenu = () => {
@@ -201,6 +206,13 @@ function Header() {
                         >
                           <ShoppingCartOutlined className="text-gray-500" />
                           <span>My Cart</span>
+                        </button>
+                        <button
+                          onClick={handleMyLearning}
+                          className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left cursor-pointer"
+                        >
+                          <ReadOutlined className="text-gray-500" />
+                          <span>My Learning</span>
                         </button>
 
                         <div className="border-t border-gray-200 my-1"></div>
