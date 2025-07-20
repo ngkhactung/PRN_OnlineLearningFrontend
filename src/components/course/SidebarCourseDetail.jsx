@@ -1,15 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "antd";
+import { Button, Modal } from "antd";
 import img from "../../assets/img/special_cource_1.png";
-import { Link, useNavigate } from "react-router-dom";
-import { checkEnrollment } from "../../api/courseApi";
+import { useNavigate } from "react-router-dom";
+import { checkEnrollment, enrollCourse } from "../../api/courseApi";
 import useAuth from "../../utils/useAuth";
 
 function SidebarCourseDetail({ course }) {
   const isLoggedIn = useAuth();
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("success"); // "success" hoặc "error"
+  const [modalContent, setModalContent] = useState("");
   const navigate = useNavigate();
-
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const handleOk = () => {
+    setIsModalOpen(false);
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
   useEffect(() => {
     if (isLoggedIn && course?.courseId) {
       checkEnrollment(course.courseId).then((res) => {
@@ -31,10 +42,25 @@ function SidebarCourseDetail({ course }) {
     // Chuyển sang trang thanh toán
   };
 
+  const handleEnrollNow = async () => {
+    if (!isLoggedIn) return navigate("/auth");
+    const result = await enrollCourse(course.courseId);
+    if (result.success) {
+      setModalType("success");
+      setModalContent("You can start study now!");
+      setIsModalOpen(true);
+      setIsEnrolled(true);
+    } else {
+      setModalType("error");
+      setModalContent("Something error, please try again!");
+      setIsModalOpen(true);
+    }
+  };
+
   const handleGoToLearning = () => {
     navigate(`/user/course-learning/${course.courseId}`);
   };
- console.log(isEnrolled);
+  console.log(isEnrolled);
   return (
     <div className="w-full lg:w-1/3 px-4 mt-8 lg:mt-0">
       <div className="lg:sticky lg:top-24">
@@ -48,9 +74,9 @@ function SidebarCourseDetail({ course }) {
             {course.price === 0
               ? "Free"
               : course.price.toLocaleString("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                })}
+                style: "currency",
+                currency: "VND",
+              })}
           </div>
         </div>
         <div className="p-6 mb-8">
@@ -74,18 +100,44 @@ function SidebarCourseDetail({ course }) {
               </span>
             </li>
           </ul>
+          <Modal
+            title={modalType === "success" ? "Enroll successful" : "Enroll fail, retry later"}
+            open={isModalOpen}
+            onOk={handleOk}
+            onCancel={handleCancel}
+            centered
+          >
+            <p>{modalContent}</p>
+          </Modal>
+          <>
+            <Button type="primary" onClick={showModal}>
+              Open Modal
+            </Button>
+
+          </>
           {!isLoggedIn || (isLoggedIn && !isEnrolled) ? (
             <>
-              <Button
-                type="primary"
-                className="w-full mt-6"
-                onClick={handleAddToCart}
-              >
-                Add To Cart
-              </Button>
-              <Button className="w-full mt-2" onClick={handleBuyNow}>
-                Buy Now
-              </Button>
+              {isLoggedIn && course.price === 0 && !isEnrolled ? (
+                <Button
+                  type="primary"
+                  className="w-full mt-6"
+                  onClick={handleEnrollNow}
+                >
+                  Enroll now
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    className="w-full mt-6"
+                    onClick={handleAddToCart}
+                  >
+                    Add To Cart
+                  </Button>
+                  <Button type="primary" className="w-full mt-2" onClick={handleBuyNow}>
+                    Buy Now
+                  </Button>
+                </>
+              )}
             </>
           ) : (
             <Button
