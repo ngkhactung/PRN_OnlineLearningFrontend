@@ -4,7 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined } from "@
 import axios from "axios"
 import { useParams, useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5000" // Backend URL
+const API_BASE_URL = "https://localhost:5000" // Backend URL
 
 function ManaQuestion() {
   const { courseId, moduleId, quizId } = useParams()

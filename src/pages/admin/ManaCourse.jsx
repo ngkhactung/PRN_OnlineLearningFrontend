@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react"
 import { Table, Button, message, Popconfirm, Space, Image } from "antd"
 import { PlusOutlined, EditOutlined, DeleteOutlined, BookOutlined } from "@ant-design/icons"
-import axios from "axios"
+import { api } from "../../services/authService"
 import { useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5000" // Backend URL
+const API_BASE_URL = "https://localhost:5000" // Backend URL
 
 function ManaCourse() {
   const [courses, setCourses] = useState([])
@@ -26,15 +26,15 @@ function ManaCourse() {
     setLoading(true)
     try {
       const [courseRes, langRes, levelRes, catRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/admin/Courses`, {
+        api.get(`/admin/Courses`, {
           params: {
             page: pagination.current,
             pageSize: pagination.pageSize,
           },
         }),
-        axios.get(`${API_BASE_URL}/api/admin/Languages`),
-        axios.get(`${API_BASE_URL}/api/admin/Levels`),
-        axios.get(`${API_BASE_URL}/api/admin/Categories`),
+        api.get(`/admin/Languages`),
+        api.get(`/admin/Levels`),
+        api.get(`/admin/Categories`),
       ])
 
       if (!Array.isArray(courseRes.data)) {
@@ -83,7 +83,7 @@ function ManaCourse() {
   const handleDelete = async (courseId) => {
     try {
       const trimmedCourseId = courseId ? courseId.trim() : ""
-      await axios.delete(`${API_BASE_URL}/api/admin/Courses/${trimmedCourseId}`)
+      const res = await api.delete(`/admin/Courses/${trimmedCourseId}`)
       message.success("Đã xóa khóa học thành công")
       fetchCourses()
     } catch (error) {

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
 import { Table, Button, message, Popconfirm, Space, Modal, Form, Input, InputNumber, Select } from "antd"
 import { PlusOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined, QuestionOutlined } from "@ant-design/icons"
-import axios from "axios"
+import { api } from "../../services/authService"
 import { useParams, useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5000" // Backend URL
+const API_BASE_URL = "https://localhost:5000" // Backend URL
 
 function ManaQuiz() {
   const { courseId, moduleId } = useParams()
@@ -30,9 +30,9 @@ function ManaQuiz() {
   // Fetch module and course name for display
   const fetchModuleAndCourseName = async () => {
     try {
-      const moduleRes = await axios.get(`${API_BASE_URL}/api/admin/Modules/${moduleId}`)
+      const moduleRes = await api.get(`/admin/Modules/${moduleId}`)
       setModuleName(moduleRes.data.moduleName)
-      const courseRes = await axios.get(`${API_BASE_URL}/api/admin/Courses/${courseId}`)
+      const courseRes = await api.get(`/admin/Courses/${courseId}`)
       setCourseName(courseRes.data.courseName)
     } catch (error) {
       console.error("Fetch Module/Course Name Error:", error.response?.data || error.message)
@@ -44,9 +44,9 @@ function ManaQuiz() {
   const fetchQuizzes = async () => {
     setLoading(true)
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/admin/Quizzes`, {
+      const res = await api.get(`/admin/Quizzes`, {
         params: {
-          moduleId: moduleId,
+          moduleId,
           page: pagination.current,
           pageSize: pagination.pageSize,
         },
@@ -95,7 +95,7 @@ function ManaQuiz() {
   // DELETE: Xóa câu đố
   const handleDelete = async (quizId) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/admin/Quizzes/${quizId}`)
+      await api.delete(`/admin/Quizzes/${quizId}`)
       message.success("Đã xóa câu đố thành công")
       fetchQuizzes() // Tải lại danh sách sau khi xóa
     } catch (error) {
@@ -115,7 +115,7 @@ function ManaQuiz() {
     try {
       if (editingQuiz) {
         // UPDATE: Gửi yêu cầu PUT nếu đang chỉnh sửa
-        await axios.put(`${API_BASE_URL}/api/admin/Quizzes/${editingQuiz.quizID}`, {
+        await api.put(`/admin/Quizzes/${editingQuiz.quizID}`, {
           quizName: values.quizName,
           quizTime: values.quizTime,
           passScore: values.passScore,
@@ -128,7 +128,7 @@ function ManaQuiz() {
         // Để đơn giản, chúng ta sẽ tạo một quiz rỗng và sau đó quản lý câu hỏi riêng.
         // Hoặc bạn có thể thêm một form phức tạp hơn để thêm câu hỏi ngay khi tạo quiz.
         // Hiện tại, tôi sẽ gửi một mảng Questions rỗng.
-        await axios.post(`${API_BASE_URL}/api/admin/Quizzes`, {
+        await api.post(`/admin/Quizzes`, {
           moduleID: moduleId, // Gửi kèm moduleId
           quizName: values.quizName,
           quizTime: values.quizTime,

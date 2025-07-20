@@ -52,7 +52,21 @@ function Auth() {
           // Update auth state in context
           updateAuthState(true);
           toast.success("Login successful!");
-          navigate("/"); // Redirect to home page
+          // Check user role
+          const user = localStorage.getItem("user");
+          let isAdmin = false;
+          if (user) {
+            try {
+              const parsed = JSON.parse(user);
+              if (parsed.role && parsed.role === "Admin") isAdmin = true;
+              if (parsed.roles && Array.isArray(parsed.roles) && parsed.roles.includes("Admin")) isAdmin = true;
+            } catch {}
+          }
+          if (isAdmin) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
         } else {
           const errorMsg = result.message || "Login failed. Please try again.";
           setErrorMessage(errorMsg);

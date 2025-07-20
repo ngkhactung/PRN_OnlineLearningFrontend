@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Form, Input, Button, Select, message, Upload, Card, Space, Row, Col } from "antd";
+import { Form, Input, Button, Select, message, Upload, Card, Space, Row, Col, InputNumber } from "antd";
 import { UploadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import axios from "axios";
+import { api } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://localhost:5000";
 
 function AddCourse() {
   const [form] = Form.useForm();
@@ -21,9 +21,9 @@ function AddCourse() {
       setLoading(true);
       try {
         const [langRes, levelRes, catRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/api/admin/Languages`),
-          axios.get(`${API_BASE_URL}/api/admin/Levels`),
-          axios.get(`${API_BASE_URL}/api/admin/Categories`),
+          api.get(`/admin/Languages`),
+          api.get(`/admin/Levels`),
+          api.get(`/admin/Categories`),
         ]);
         setLanguages(
           langRes.data.map((lang) => ({
@@ -101,7 +101,7 @@ function AddCourse() {
       formData.append("LevelID", values.levelId.toString());
     }
     if (values.price !== undefined && values.price !== null) {
-      formData.append("Price", values.price.toString());
+      formData.append("Price", Number(values.price));
     }
     if (values.status !== undefined && values.status !== null) {
       formData.append("Status", values.status.toString());
@@ -114,7 +114,7 @@ function AddCourse() {
     }
 
     try {
-      await axios.post(`${API_BASE_URL}/api/admin/Courses`, formData, {
+      const res = await api.post(`/admin/Courses`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       message.success("Tạo khóa học thành công");
@@ -285,7 +285,7 @@ function AddCourse() {
                     { type: "number", min: 0, message: "Giá phải lớn hơn hoặc bằng 0" }
                   ]}
                 >
-                  <Input type="number" placeholder="0" min={0} />
+                  <InputNumber style={{ width: "100%" }} min={0} />
                 </Form.Item>
               </div>
               <div
