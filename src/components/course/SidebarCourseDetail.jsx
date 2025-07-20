@@ -12,9 +12,7 @@ function SidebarCourseDetail({ course }) {
   const [modalType, setModalType] = useState("success"); // "success" hoặc "error"
   const [modalContent, setModalContent] = useState("");
   const navigate = useNavigate();
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
+
   const handleOk = () => {
     setIsModalOpen(false);
   };
@@ -109,12 +107,7 @@ function SidebarCourseDetail({ course }) {
           >
             <p>{modalContent}</p>
           </Modal>
-          <>
-            <Button type="primary" onClick={showModal}>
-              Open Modal
-            </Button>
-
-          </>
+          
           {!isLoggedIn || (isLoggedIn && !isEnrolled) ? (
             <>
               {isLoggedIn && course.price === 0 && !isEnrolled ? (
