@@ -368,4 +368,6 @@ export const authService = {
   },
 };
 
+export { api };
+
 export default authService;

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
 import { Table, Button, message, Popconfirm, Space, Modal, Form, Input, InputNumber, Select } from "antd"
 import { PlusOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined } from "@ant-design/icons"
-import axios from "axios"
+import { api } from "../../services/authService"
 import { useParams, useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5000" // Backend URL
+const API_BASE_URL = "https://localhost:5000" // Backend URL
 
 function ManaLesson() {
   const { courseId, moduleId } = useParams()
@@ -30,9 +30,9 @@ function ManaLesson() {
   // Fetch module and course name for display
   const fetchModuleAndCourseName = async () => {
     try {
-      const moduleRes = await axios.get(`${API_BASE_URL}/api/admin/Modules/${moduleId}`)
+      const moduleRes = await api.get(`/admin/Modules/${moduleId}`)
       setModuleName(moduleRes.data.moduleName)
-      const courseRes = await axios.get(`${API_BASE_URL}/api/admin/Courses/${courseId}`)
+      const courseRes = await api.get(`/admin/Courses/${courseId}`)
       setCourseName(courseRes.data.courseName)
     } catch (error) {
       console.error("Fetch Module/Course Name Error:", error.response?.data || error.message)
@@ -44,7 +44,7 @@ function ManaLesson() {
   const fetchLessons = async () => {
     setLoading(true)
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/admin/Lessons`, {
+      const res = await api.get(`/admin/Lessons`, {
         params: {
           moduleId: moduleId,
           page: pagination.current,
@@ -97,7 +97,7 @@ function ManaLesson() {
   // DELETE: Xóa bài học
   const handleDelete = async (lessonId) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/admin/Lessons/${lessonId}`)
+      const res = await api.delete(`/admin/Lessons/${lessonId}`)
       message.success("Đã xóa bài học thành công")
       fetchLessons() // Tải lại danh sách sau khi xóa
     } catch (error) {
@@ -117,7 +117,7 @@ function ManaLesson() {
     try {
       if (editingLesson) {
         // UPDATE: Gửi yêu cầu PUT nếu đang chỉnh sửa
-        await axios.put(`${API_BASE_URL}/api/admin/Lessons/${editingLesson.lessonID}`, {
+        const res = await api.put(`/admin/Lessons/${editingLesson.lessonID}`, {
           lessonNumber: values.lessonNumber,
           lessonName: values.lessonName,
           lessonContent: values.lessonContent,
@@ -128,7 +128,7 @@ function ManaLesson() {
         message.success("Cập nhật bài học thành công")
       } else {
         // CREATE: Gửi yêu cầu POST nếu đang thêm mới
-        await axios.post(`${API_BASE_URL}/api/admin/Lessons`, {
+        const res = await api.post(`/admin/Lessons`, {
           moduleID: moduleId, // Gửi kèm moduleId
           lessonNumber: values.lessonNumber || 0, // Gửi 0 nếu không cung cấp, backend sẽ tự động tạo
           lessonName: values.lessonName,

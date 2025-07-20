@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Form, Input, Button, Select, message, Upload, Card, Space, Row, Col } from "antd";
+import { Form, Input, Button, Select, message, Upload, Card, Space, Row, Col, InputNumber } from "antd";
 import { UploadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import axios from "axios";
+import { api } from "../../services/authService";
 import { useParams, useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://localhost:5000";
 
 function EditCourse() {
   const [form] = Form.useForm();
@@ -23,12 +23,12 @@ function EditCourse() {
     const fetchData = async () => {
       try {
         const [courseRes, langRes, levelRes, catRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/api/admin/Courses/${id}`, {
-            headers: { "Cache-Control": "no-cache" },
+          api.get(`/admin/Courses/${id}`, {
+            headers: { Accept: "application/json" },
           }),
-          axios.get(`${API_BASE_URL}/api/admin/Languages`),
-          axios.get(`${API_BASE_URL}/api/admin/Levels`),
-          axios.get(`${API_BASE_URL}/api/admin/Categories`),
+          api.get(`/admin/Languages`),
+          api.get(`/admin/Levels`),
+          api.get(`/admin/Categories`),
         ]);
 
         if (courseRes.data.status === -1) {
@@ -146,7 +146,7 @@ function EditCourse() {
       formData.append("LevelID", values.levelId.toString());
     }
     if (values.price !== undefined && values.price !== null) {
-      formData.append("Price", values.price.toString());
+      formData.append("Price", Number(values.price));
     }
     if (Array.isArray(values.categoryId)) {
       values.categoryId.forEach((catId) => formData.append("CategoryIDs", catId.toString()));
@@ -172,7 +172,7 @@ function EditCourse() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/api/admin/Courses/${id}`, formData, {
+      const res = await api.put(`/admin/Courses/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       message.success("Cập nhật khóa học thành công");
@@ -362,7 +362,7 @@ function EditCourse() {
                     { type: "number", min: 0, message: "Giá phải lớn hơn hoặc bằng 0" }
                   ]}
                 >
-                  <Input type="number" placeholder="0" min={0} />
+                  <InputNumber style={{ width: "100%" }} min={0} />
                 </Form.Item>
               </div>
               <Form.Item

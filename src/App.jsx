@@ -23,6 +23,7 @@ import { setAuthContextUpdate } from "./services/authService.js";
 import AccessDenied from "./pages/auth/AccessDenied.jsx";
 import { useEffect } from "react";
 import PrivateRoute from "./components/PrivateRoute.jsx";
+import AdminRoute from "./components/PrivateRoute.jsx";
 
 function AppContent() {
   const { updateAuthState } = useAuth();
@@ -104,7 +105,6 @@ function AppContent() {
           </Route>
         </Route>
         <Route element={<PrivateRoute />}>
-          
           <Route
             path="/user/course-learning/:courseId"
             element={<CourseLearning />}
@@ -113,34 +113,36 @@ function AppContent() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/access-denied" element={<AccessDenied />} />
         {/* Admin routes với layout */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="courses" element={<ManaCourse />} />
-          <Route path="courses/add" element={<AddCourse />} />
-          <Route path="courses/edit/:id" element={<EditCourse />} />
-          {/* Thêm route cho ManaModule */}
-          <Route path="courses/:courseId/modules" element={<ManaModule />} />
-          {/* Thêm route cho ManaLesson */}
-          <Route
-            path="courses/:courseId/modules/:moduleId/lessons"
-            element={<ManaLesson />}
-          />
-          {/* Thêm route cho ManaQuiz */}
-          <Route
-            path="courses/:courseId/modules/:moduleId/quizzes"
-            element={<ManaQuiz />}
-          />
-          {/* Thêm route cho ManaQuestion */}
-          <Route
-            path="courses/:courseId/modules/:moduleId/quizzes/:quizId/questions"
-            element={<ManaQuestion />}
-          />
-          <Route
-            path="users"
-            element={<div>Quản lý người dùng - Coming soon</div>}
-          />
-          <Route path="settings" element={<div>Cài đặt - Coming soon</div>} />
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="courses" element={<ManaCourse />} />
+            <Route path="courses/add" element={<AddCourse />} />
+            <Route path="courses/edit/:id" element={<EditCourse />} />
+            {/* Thêm route cho ManaModule */}
+            <Route path="courses/:courseId/modules" element={<ManaModule />} />
+            {/* Thêm route cho ManaLesson */}
+            <Route
+              path="courses/:courseId/modules/:moduleId/lessons"
+              element={<ManaLesson />}
+            />
+            {/* Thêm route cho ManaQuiz */}
+            <Route
+              path="courses/:courseId/modules/:moduleId/quizzes"
+              element={<ManaQuiz />}
+            />
+            {/* Thêm route cho ManaQuestion */}
+            <Route
+              path="courses/:courseId/modules/:moduleId/quizzes/:quizId/questions"
+              element={<ManaQuestion />}
+            />
+            <Route
+              path="users"
+              element={<div>Quản lý người dùng - Coming soon</div>}
+            />
+            <Route path="settings" element={<div>Cài đặt - Coming soon</div>} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

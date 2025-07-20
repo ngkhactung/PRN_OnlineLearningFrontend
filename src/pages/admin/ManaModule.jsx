@@ -8,10 +8,10 @@ import {
   BookOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons"
-import axios from "axios"
+import { api } from "../../services/authService"
 import { useParams, useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5000" // Backend URL
+const API_BASE_URL = "https://localhost:5000" // Backend URL
 
 function ManaModule() {
   const { courseId } = useParams()
@@ -36,7 +36,7 @@ function ManaModule() {
   // READ: Lấy tên khóa học để hiển thị
   const fetchCourseName = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/admin/Courses/${courseId}`)
+      const res = await api.get(`/admin/Courses/${courseId}`)
       setCourseName(res.data.courseName)
     } catch (error) {
       console.error("Fetch Course Name Error:", error.response?.data || error.message)
@@ -48,7 +48,7 @@ function ManaModule() {
   const fetchModules = async () => {
     setLoading(true)
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/admin/Modules`, {
+      const res = await api.get(`/admin/Modules`, {
         params: {
           courseId: courseId,
           page: pagination.current,
@@ -99,7 +99,7 @@ function ManaModule() {
   // DELETE: Xóa module
   const handleDelete = async (moduleId) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/admin/Modules/${moduleId}`)
+      const res = await api.delete(`/admin/Modules/${moduleId}`)
       message.success("Đã xóa module thành công")
       fetchModules() // Tải lại danh sách sau khi xóa
     } catch (error) {
@@ -121,7 +121,7 @@ function ManaModule() {
     try {
       if (editingModule) {
         // UPDATE: Gửi yêu cầu PUT nếu đang chỉnh sửa
-        await axios.put(`${API_BASE_URL}/api/admin/Modules/${editingModule.moduleID}`, {
+        const res = await api.put(`/admin/Modules/${editingModule.moduleID}`, {
           moduleName: values.moduleName,
           moduleNumber: values.moduleNumber,
           status: values.status,
@@ -129,7 +129,7 @@ function ManaModule() {
         message.success("Cập nhật module thành công")
       } else {
         // CREATE: Gửi yêu cầu POST nếu đang thêm mới
-        await axios.post(`${API_BASE_URL}/api/admin/Modules`, {
+        const res = await api.post(`/admin/Modules`, {
           courseID: courseId, // Gửi kèm courseId
           moduleName: values.moduleName,
           moduleNumber: values.moduleNumber || 0, // Gửi 0 nếu không cung cấp, backend sẽ tự động tạo
