@@ -11,7 +11,7 @@ import {
 import axios from "axios"
 import { useParams, useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5293" // Backend URL
+const API_BASE_URL = "http://localhost:5000" // Backend URL
 
 function ManaModule() {
   const { courseId } = useParams()
@@ -324,7 +324,10 @@ function ManaModule() {
           <Form.Item
             label="Tên Module"
             name="moduleName"
-            rules={[{ required: true, message: "Vui lòng nhập tên module" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên module" },
+              { max: 255, message: "Tên module tối đa 255 ký tự" }
+            ]}
           >
             <Input placeholder="Nhập tên module" />
           </Form.Item>
@@ -332,14 +335,19 @@ function ManaModule() {
             label="Số thứ tự Module"
             name="moduleNumber"
             tooltip="Để trống nếu muốn tự động tạo số thứ tự tiếp theo"
+            rules={[
+              { type: "number", min: 0, message: "Số thứ tự module phải lớn hơn hoặc bằng 0" }
+            ]}
           >
             <InputNumber min={0} placeholder="Ví dụ: 1, 2, 3..." style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item
             label="Trạng thái"
             name="status"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
-            initialValue={1} // Default to active for new modules
+            rules={[
+              { required: true, message: "Vui lòng chọn trạng thái" }
+            ]}
+            initialValue={1}
           >
             <Select placeholder="Chọn trạng thái">
               <Select.Option value={0}>Bản nháp</Select.Option>

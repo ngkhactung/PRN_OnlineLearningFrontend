@@ -4,7 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined } from "@
 import axios from "axios"
 import { useParams, useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5293" // Backend URL
+const API_BASE_URL = "http://localhost:5000" // Backend URL
 
 function ManaQuestion() {
   const { courseId, moduleId, quizId } = useParams()
@@ -327,20 +327,28 @@ function ManaQuestion() {
             label="Số thứ tự Câu hỏi"
             name="questionNum"
             tooltip="Để trống nếu muốn tự động tạo số thứ tự tiếp theo"
+            rules={[
+              { type: "number", min: 0, message: "Số thứ tự câu hỏi phải lớn hơn hoặc bằng 0" }
+            ]}
           >
             <InputNumber min={0} placeholder="Ví dụ: 1, 2, 3..." style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item
             label="Nội dung Câu hỏi"
             name="content"
-            rules={[{ required: true, message: "Vui lòng nhập nội dung câu hỏi" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập nội dung câu hỏi" },
+              { max: 255, message: "Nội dung câu hỏi tối đa 255 ký tự" }
+            ]}
           >
             <Input.TextArea rows={3} placeholder="Nhập nội dung câu hỏi" />
           </Form.Item>
           <Form.Item
             label="Loại Câu hỏi"
             name="type"
-            rules={[{ required: true, message: "Vui lòng chọn loại câu hỏi" }]}
+            rules={[
+              { required: true, message: "Vui lòng chọn loại câu hỏi" }
+            ]}
             initialValue={0} // Default to Multiple Choice
           >
             <Select placeholder="Chọn loại câu hỏi">
@@ -351,7 +359,9 @@ function ManaQuestion() {
           <Form.Item
             label="Trạng thái"
             name="status"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
+            rules={[
+              { required: true, message: "Vui lòng chọn trạng thái" }
+            ]}
             initialValue={1} // Default to active
           >
             <Select placeholder="Chọn trạng thái">
@@ -379,7 +389,10 @@ function ManaQuestion() {
                     <Form.Item
                       {...restField}
                       name={[name, "content"]}
-                      rules={[{ required: true, message: "Vui lòng nhập nội dung tùy chọn" }]}
+                      rules={[
+                        { required: true, message: "Vui lòng nhập nội dung tùy chọn" },
+                        { max: 255, message: "Nội dung tùy chọn tối đa 255 ký tự" }
+                      ]}
                       style={{ flexGrow: 1 }}
                     >
                       <Input placeholder="Nội dung tùy chọn" />
@@ -390,7 +403,9 @@ function ManaQuestion() {
                     <Form.Item
                       {...restField}
                       name={[name, "status"]}
-                      rules={[{ required: true, message: "Chọn trạng thái" }]}
+                      rules={[
+                        { required: true, message: "Chọn trạng thái" }
+                      ]}
                       initialValue={1}
                     >
                       <Select placeholder="Trạng thái" style={{ width: 100 }}>

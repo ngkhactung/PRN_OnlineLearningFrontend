@@ -4,7 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined } from "@
 import axios from "axios"
 import { useParams, useNavigate } from "react-router-dom"
 
-const API_BASE_URL = "http://localhost:5293" // Backend URL
+const API_BASE_URL = "http://localhost:5000" // Backend URL
 
 function ManaLesson() {
   const { courseId, moduleId } = useParams()
@@ -311,7 +311,10 @@ function ManaLesson() {
           <Form.Item
             label="Tên Bài học"
             name="lessonName"
-            rules={[{ required: true, message: "Vui lòng nhập tên bài học" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên bài học" },
+              { max: 255, message: "Tên bài học tối đa 255 ký tự" }
+            ]}
           >
             <Input placeholder="Nhập tên bài học" />
           </Form.Item>
@@ -319,23 +322,46 @@ function ManaLesson() {
             label="Số thứ tự Bài học"
             name="lessonNumber"
             tooltip="Để trống nếu muốn tự động tạo số thứ tự tiếp theo"
+            rules={[
+              { type: "number", min: 0, message: "Số thứ tự bài học phải lớn hơn hoặc bằng 0" }
+            ]}
           >
             <InputNumber min={0} placeholder="Ví dụ: 1, 2, 3..." style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item label="Nội dung Bài học" name="lessonContent">
+          <Form.Item
+            label="Nội dung Bài học"
+            name="lessonContent"
+            rules={[
+              { max: 2000, message: "Nội dung bài học tối đa 2000 ký tự" }
+            ]}
+          >
             <Input.TextArea rows={4} placeholder="Nhập nội dung chi tiết của bài học" />
           </Form.Item>
-          <Form.Item label="Link Video Bài học" name="lessonVideo">
+          <Form.Item
+            label="Link Video Bài học"
+            name="lessonVideo"
+            rules={[
+              { max: 500, message: "Link video tối đa 500 ký tự" }
+            ]}
+          >
             <Input placeholder="Nhập URL video bài học (ví dụ: YouTube, Vimeo)" />
           </Form.Item>
-          <Form.Item label="Thời lượng (phút)" name="duration">
+          <Form.Item
+            label="Thời lượng (phút)"
+            name="duration"
+            rules={[
+              { type: "number", min: 0, message: "Thời lượng phải lớn hơn hoặc bằng 0" }
+            ]}
+          >
             <InputNumber min={0} placeholder="Ví dụ: 60" style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item
             label="Trạng thái"
             name="status"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
-            initialValue={1} // Default to active for new lessons
+            rules={[
+              { required: true, message: "Vui lòng chọn trạng thái" }
+            ]}
+            initialValue={1}
           >
             <Select placeholder="Chọn trạng thái">
               <Select.Option value={0}>Bản nháp</Select.Option>
