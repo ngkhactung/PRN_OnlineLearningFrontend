@@ -3,12 +3,14 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { ShoppingCartOutlined, UserOutlined, LogoutOutlined, ProfileOutlined,ReadOutlined } from "@ant-design/icons";
 import { useAuth } from "../../contexts/AuthContext";
 import authService from "../../services/authService";
+import { cartService } from "../../services/cartService";
 import logo from "../../assets/img/logo.png";
 
 function Header() {
   const { isAuthenticated, updateAuthState } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [user, setUser] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
@@ -17,8 +19,23 @@ function Header() {
     if (isAuthenticated) {
       const userData = authService.getCurrentUser();
       setUser(userData);
+      setCartCount(cartService.getCartCount());
+    } else {
+      setCartCount(0);
     }
   }, [isAuthenticated]);
+
+  // Listen for cart updates
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      setCartCount(cartService.getCartCount());
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -149,9 +166,11 @@ function Header() {
                   className="relative text-gray-700 hover:text-orange-500 transition-colors p-2"
                 >
                   <ShoppingCartOutlined className="text-xl" />
-                  <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    0
-                  </span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
                 </Link>
 
                 {/* User Avatar & Menu */}

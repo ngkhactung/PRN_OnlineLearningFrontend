@@ -30,6 +30,11 @@ export const API_CONFIG = {
       UPDATE_PROFILE: '/User/UpdateProfile',
       MY_COURSES: '/User/MyCourses',
     },
+    CART: {
+      GET_CART_ITEMS: '/Cart/GetCartItems',
+      ADD_CART_ITEM: '/Cart/AddCartItem',
+      DELETE_CART_ITEM: '/Cart/DeleteCartItem',
+    },
   },
   
   // HTTP Status Codes

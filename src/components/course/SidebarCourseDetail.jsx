@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal } from "antd";
+import { Button, Modal, message } from "antd";
 import img from "../../assets/img/special_cource_1.png";
 import { useNavigate } from "react-router-dom";
 import { checkEnrollment, enrollCourse } from "../../api/courseApi";
 import useAuth from "../../utils/useAuth";
+import { cartService } from "../../services/cartService";
+import AddToCartModal from "../common/AddToCartModal";
 
 function SidebarCourseDetail({ course }) {
   const isLoggedIn = useAuth();
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isInCart, setIsInCart] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAddToCartModal, setShowAddToCartModal] = useState(false);
+  const [addedCourseData, setAddedCourseData] = useState(null);
   const [modalType, setModalType] = useState("success"); // "success" hoặc "error"
   const [modalContent, setModalContent] = useState("");
   const navigate = useNavigate();
@@ -21,17 +26,40 @@ function SidebarCourseDetail({ course }) {
   };
   useEffect(() => {
     if (isLoggedIn && course?.courseId) {
+      // Check enrollment
       checkEnrollment(course.courseId).then((res) => {
         console.log("Enrollment API result:", res);
         setIsEnrolled(res);
       });
+
+      // Check if course is in cart
+      setIsInCart(cartService.isInCart(course.courseId));
     }
   }, [isLoggedIn, course?.courseId]);
 
   //* Xử lí ADD TO CART ở đây
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isLoggedIn) return navigate("/auth");
-    // Thêm vào giỏ hàng
+    
+    const result = await cartService.addCartItem({ 
+      courseId: course.courseId 
+    });
+    
+    if (result.success) {
+      setIsInCart(true);
+      setAddedCourseData(result.data); // Store the course data from API response
+      setShowAddToCartModal(true); // Show popup instead of message
+      
+      // Trigger header cart count update
+      window.dispatchEvent(new CustomEvent('cartUpdated'));
+    } else {
+      message.error(result.message);
+    }
+  };
+
+  //* Xử lí GO TO CART ở đây
+  const handleGoToCart = () => {
+    navigate("/cart");
   };
 
   //* Xử lí BUY NOW ở đây
@@ -120,12 +148,21 @@ function SidebarCourseDetail({ course }) {
                 </Button>
               ) : (
                 <>
-                  <Button
-                    className="w-full mt-6"
-                    onClick={handleAddToCart}
-                  >
-                    Add To Cart
-                  </Button>
+                  {!isInCart ? (
+                    <Button
+                      className="w-full mt-6"
+                      onClick={handleAddToCart}
+                    >
+                      Add To Cart
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full mt-6"
+                      onClick={handleGoToCart}
+                    >
+                      Go To Cart
+                    </Button>
+                  )}
                   <Button type="primary" className="w-full mt-2" onClick={handleBuyNow}>
                     Buy Now
                   </Button>
@@ -143,6 +180,13 @@ function SidebarCourseDetail({ course }) {
           )}
         </div>
       </div>
+      
+      {/* Add to Cart Modal */}
+      <AddToCartModal
+        visible={showAddToCartModal}
+        onClose={() => setShowAddToCartModal(false)}
+        courseData={addedCourseData}
+      />
     </div>
   );
 }
