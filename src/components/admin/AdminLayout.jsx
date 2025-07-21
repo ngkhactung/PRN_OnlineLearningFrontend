@@ -6,6 +6,8 @@ import {
   DashboardOutlined,
   PlusOutlined,
   UnorderedListOutlined,
+  CommentOutlined,
+  TagOutlined
 } from "@ant-design/icons"
 import { Breadcrumb, Layout, Menu, theme, Button } from "antd"
 import { Outlet, useNavigate, useLocation, useParams } from "react-router-dom" // Import useParams
@@ -49,12 +51,25 @@ const AdminLayout = () => {
       onClick: () => navigate("/admin/users"),
     },
     {
+      key: "comments",
+      icon: <CommentOutlined />, // import biểu tượng bình luận nếu chưa có
+      label: "Quản lý bình luận",
+      onClick: () => navigate("/admin/comments"),
+    },
+    {
+      key: "discounts",
+      icon: <TagOutlined />, // import TagOutlined nếu dùng Ant Design
+      label: "Quản lý khuyến mãi",
+      onClick: () => navigate("/admin/discounts"),
+    },
+    {
       key: "settings",
       icon: <SettingOutlined />,
       label: "Cài đặt",
       onClick: () => navigate("/admin/settings"),
     },
-  ]
+  ];
+
 
   // Header menu items
   const headerItems = [
