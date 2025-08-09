@@ -1,4 +1,5 @@
 import React from "react";
+import logo from "../../assets/img/logo.png";
 
 function Footer() {
   return (
@@ -8,6 +9,7 @@ function Footer() {
           {/* Logo and Description Section */}
           <div className="space-y-4">
             <div>
+<<<<<<< HEAD
               <a href="/" className="flex items-center">
                 <img
                   src="/img/logo.png" // Vite root-relative path
@@ -24,6 +26,10 @@ function Footer() {
                   }}
                   onLoad={() => console.log("Logo loaded successfully:", document.baseURI)} // Confirm load
                 />
+=======
+              <a href="index.html">
+                <img src={logo} alt="Logo" className="h-12" />
+>>>>>>> dev
               </a>
             </div>
             <p className="text-gray-600">

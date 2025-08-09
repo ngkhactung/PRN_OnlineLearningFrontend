@@ -1,193 +1,228 @@
-import Header from "../components/common/Header";
-import Footer from "../components/common/Footer";
-import { useState } from "react";
-import { useEffect } from "react";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Pagination, Select, Input, Empty,Spin } from "antd";
+import CourseItem from "../components/course/CourseItem";
+import SidebarCourseFilter from "../components/course/SidebarCourseFilter";
+
+const { Search } = Input;
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 function Courses() {
   const [courses, setCourses] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalCourses, setTotalCourses] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const itemsPerPage = 6;
-  const totalPages = Math.ceil(totalCourses / itemsPerPage);
+  // Filter state default values
+  const [filters, setFilters] = useState({
+    page: 1,
+    pageSize: 6,
+    searchTerm: "",
+    categoryIds: [],
+    minPrice: "",
+    maxPrice: "",
+    sortBy: "CreatedAt",
+    sortOrder: "desc",
+  });
 
-  // Fetch courses data
-  useEffect(() => {
-    fetchCourses();
-  }, [currentPage]);
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 6,
+    totalCount: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
 
-  // Get course data
-  const fetchCourses = async () => {
+  // Fetch courses function
+  const fetchCourses = async (filterParams = filters) => {
+    setLoading(true);
+
     try {
-    //   setLoading(true);
-      //  Pagination từ server
-      const response = null;
-      setCourses(response.data.courses);
-      setTotalCourses(response.data.totalCount);
+      const queryParams = new URLSearchParams();
+
+      // PAGE AND PAGE SIZE
+      queryParams.append("Page", filterParams.page.toString());
+      queryParams.append("PageSize", filterParams.pageSize.toString());
+
+      // SEARCH TERM
+      if (filterParams.searchTerm) {
+        queryParams.append("SearchTerm", filterParams.searchTerm);
+      }
+
+      // CATEGORY FILTERS
+      if (filterParams.categoryIds && filterParams.categoryIds.length > 0) {
+        filterParams.categoryIds.forEach((id) => {
+          queryParams.append("CategoryIds", id.toString());
+        });
+      }
+
+      // PRICE RANGE 
+      if (filterParams.minPrice) {
+        queryParams.append("MinPrice", filterParams.minPrice.toString());
+      }
+      if (filterParams.maxPrice) {
+        queryParams.append("MaxPrice", filterParams.maxPrice.toString());
+      }
+
+      // SORT 
+      if (filterParams.sortBy === "Price-Desc") {
+        queryParams.append("SortBy", "Price");
+        queryParams.append("SortOrder", "desc");
+      } else if (filterParams.sortBy === "Price-Asc") {
+        queryParams.append("SortBy", "Price");
+        queryParams.append("SortOrder", "asc");
+      } else {
+        //  sorting by createdAt and Popular
+        queryParams.append("SortBy", filterParams.sortBy);
+        queryParams.append("SortOrder", "desc");
+      }
+      
+      const response = await fetch(
+        `${baseURL}/courses/filter?${queryParams.toString()}`
+      );
+      console.log("Fetching courses with params:", queryParams.toString()); //debug
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        setCourses(result.data.dataPaginated);
+        setPagination({
+          currentPage: result.data.currentPage,
+          pageSize: result.data.pageSize,
+          totalCount: result.data.totalCount,
+          totalPages: result.data.totalPages,
+          hasNextPage: result.data.hasNextPage,
+          hasPreviousPage: result.data.hasPreviousPage,
+        });
+      } else {
+        console.error("API returned failure:", result.message);
+      }
     } catch (err) {
-    //   setError("Failed to fetch courses");
       console.error("Error fetching courses:", err);
     } finally {
-    //   setLoading(false);
+      setLoading(false);
     }
   };
 
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-      // Scroll to top khi chuyển trang
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  // Handle filter changes
+  const handleFilterChange = (name, value) => {
+    const newFilters = { ...filters, [name]: value, page: 1 };
+    setFilters(newFilters);
+    fetchCourses(newFilters);
   };
 
-//   if (loading) {
-//     return (
-//       <div>
-//         <Header />
-//         <div
-//           className="d-flex justify-content-center align-items-center"
-//           style={{ minHeight: "400px" }}
-//         >
-//           <div className="spinner-border text-primary" role="status">
-//             <span className="sr-only">Not courses available</span>
-//           </div>
-//         </div>
-//         <Footer />
-//       </div>
-//     );
-//   }
+  // Handle search
+  const handleSearch = (value) => {
+    const newFilters = { ...filters, searchTerm: value, page: 1 };
+    setFilters(newFilters);
+    fetchCourses(newFilters);
+  };
 
-//   if (loading) {
-//     return (
-//       <div>
-//         <Header />
-//         <div
-//           className="d-flex justify-content-center align-items-center"
-//           style={{ minHeight: "400px" }}
-//         >
-//           <div className="spinner-border text-primary" role="status">
-//             <span className="sr-only">Loading...</span>
-//           </div>
-//         </div>
-//         <Footer />
-//       </div>
-//     );
-//   }
+  // Handle pagination
+  const handlePageChange = (page, pageSize) => {
+    const newFilters = { ...filters, page, pageSize };
+    setFilters(newFilters);
+    fetchCourses(newFilters);
+  };
 
-//   if (error) {
-//     return (
-//       <div>
-//         <Header />
-//         <div
-//           className="container text-center"
-//           style={{ minHeight: "400px", paddingTop: "150px" }}
-//         >
-//           <h3>Error loading courses</h3>
-//           <p>{error}</p>
-//           <button className="btn btn-primary" onClick={fetchCourses}>
-//             Try Again
-//           </button>
-//         </div>
-//         <Footer />
-//       </div>
-//     );
-//   }
+  // Reset filters
+  const resetFilters = () => {
+    const defaultFilters = {
+      page: 1,
+      pageSize: 6,
+      searchTerm: "",
+      levelId: null,
+      languageId: null,
+      categoryIds: [],
+      minPrice: "",
+      maxPrice: "",
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    };
+    setFilters(defaultFilters);
+    fetchCourses(defaultFilters);
+  };
 
   return (
-    <div>
-      <Header />
-
-      <section className="special_cource padding_top">
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-xl-5">
-              <div className="section_tittle text-center">
-                <p>popular courses</p>
-                <h2>Special Courses</h2>
-              </div>
-            </div>
-          </div>
-
-          {/* Course Items */}
-          <div className="row">
-            {courses.length > 0 ? (
-              courses.map((course) => (
-                <CourseItem key={course.id} course={course} />
-              ))
-            ) : (
-              <div className="col-12 text-center">
-                <p>No courses available</p>
-              </div>
-            )}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
+    <div className="min-h-screen bg-gray-50 mt-5">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar filter */}
+          <div className="lg:w-1/4 w-full">
+            <SidebarCourseFilter
+              filters={filters}
+              setFilters={setFilters}
+              onApply={fetchCourses}
+              resetFilters={resetFilters}
             />
-          )}
-
-          {/* Course count info */}
-          <div className="row mt-3">
-            <div className="col-12 text-center">
-              <p className="text-muted">
-                Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                {Math.min(currentPage * itemsPerPage, totalCourses)} of{" "}
-                {totalCourses} courses
-              </p>
-            </div>
           </div>
-        </div>
-      </section>
-
-      {/* Testimonial section */}
-      <section className="testimonial_part section_padding">
-        <div className="container-fluid">
-          <div className="row justify-content-center">
-            <div className="col-xl-5">
-              <div className="section_tittle text-center">
-                <p>testimonials</p>
-                <h2>Happy Students</h2>
+          {/* Main content */}
+          <div className="flex-1">
+            {/* Filters and Sort */}
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-8">
+              <div>
+                <Search
+                  placeholder="Tìm kiếm khóa học..."
+                  allowClear
+                  value={filters.searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  style={{ width: 300 }}
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-600 whitespace-nowrap">
+                  Hiển thị {courses.length} trong {pagination.totalCount} khóa
+                  học
+                </span>
+                <Select
+                  value={filters.sortBy}
+                  style={{ width: 150 }}
+                  onChange={(value) => handleFilterChange("sortBy", value)}
+                  options={[
+                    { value: "Price-Desc", label: "Giá giảm dần" },
+                    { value: "Price-Asc", label: "Giá tăng dần" },
+                    { value: "Popular", label: "Phổ biến nhất" },
+                    { value: "CreatedAt", label: "Mới nhất" },
+                  ]}
+                />
               </div>
             </div>
-          </div>
-          <div className="row">
-            <div className="col-lg-12">
-              <div className="textimonial_iner owl-carousel">
-                {/* Testimonial content giữ nguyên hoặc cũng có thể fetch từ API */}
-                <div className="testimonial_slider">
-                  <div className="row">
-                    <div className="col-lg-8 col-xl-4 col-sm-8 align-self-center">
-                      <div className="testimonial_slider_text">
-                        <p>
-                          Behold place was a multiply creeping creature his
-                          domin to thiren open void hath herb divided divide
-                          creepeth living shall i call beginning third sea
-                          itself set
-                        </p>
-                        <h4>Michel Hashale</h4>
-                        <h5> Sr. Web designer</h5>
-                      </div>
-                    </div>
-                    <div className="col-lg-4 col-xl-2 col-sm-4">
-                      <div className="testimonial_slider_img">
-                        <img src="img/testimonial_img_1.png" alt="#" />
-                      </div>
-                    </div>
-                  </div>
+            {/* Course Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {loading ? (
+                <div className="col-span-full text-center mt-10 text-gray-500 py-12">
+                  <Spin tip="Đang tải khóa học..."  size="large"/>
                 </div>
-              </div>
+              ) : courses.length === 0 ? (
+                <div className="col-span-full text-center mt-10 text-gray-500 py-12">
+                  <Empty description="Không tìm thấy khóa học nào" />
+                </div>
+              ) : (
+                <>
+                  {courses.map((course) => (
+                    <CourseItem key={course.id} course={course} />
+                  ))}
+                </>
+              )}
+            </div>
+            {/* Pagination */}
+            <div className="flex justify-center mt-8">
+              <Pagination
+                current={pagination.currentPage}
+                pageSize={pagination.pageSize}
+                total={pagination.totalCount}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+              />
             </div>
           </div>
         </div>
-      </section>
-
-      <Footer />
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   CheckCircleOutlined,
   LockOutlined,
@@ -6,104 +7,212 @@ import {
   SafetyOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Checkbox, Form, Input, Flex, Typography } from "antd";
+import { Button, Form, Input, Flex, Typography, Alert } from "antd";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import authService from "../../services/authService";
+import { useAuth } from "../../contexts/AuthContext";
+import OTPVerification from "../../components/auth/OTPVerification";
+import ForgotPassword from "../../components/auth/ForgotPassword";
 
 function Auth() {
-  // Password validation rules
+  // Password validation rules - simplified
   const passwordRules = [
     { required: true, message: "Please input your password!" },
-    { min: 8, message: "Password must be at least 8 characters!" },
-    {
-      pattern: /^(?=.*[a-z])/,
-      message: "Password must contain at least one lowercase letter!",
-    },
-    {
-      pattern: /^(?=.*[A-Z])/,
-      message: "Password must contain at least one uppercase letter!",
-    },
-    {
-      pattern: /^(?=.*\d)/,
-      message: "Password must contain at least one number!",
-    },
-    {
-      pattern: /^(?=.*[!@#$%^&*])/,
-      message:
-        "Password must contain at least one special character (!@#$%^&*)!",
-    },
+    { min: 6, message: "Password must be at least 6 characters!" },
+  ];
+  
+  // Different password rules for login (less strict)
+  const loginPasswordRules = [
+    { required: true, message: "Please input your password!" },
   ];
   const [activeTab, setActiveTab] = useState("login");
+  const [showOTP, setShowOTP] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [pendingUserData, setPendingUserData] = useState(null);
+  const [userEmail, setUserEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
+  const { updateAuthState } = useAuth();
 
-  const onFinish = (values) => {
-    console.log("Form values:", values);
-    if (activeTab === "login") {
-      // Handle login
-      console.log("Login data:", values);
-    } else {
-      // Handle register
-      console.log("Register data:", values);
+  const onFinish = async (values) => {
+    setLoading(true);
+    setErrorMessage(""); // Clear previous error
+    
+    try {
+      if (activeTab === "login") {
+        // Handle login
+        const result = await authService.login({
+          email: values.email,
+          password: values.password,
+        });
+
+        if (result.success) {
+          // Update auth state in context
+          updateAuthState(true);
+          toast.success("Login successful!");
+          // Check user role
+          const user = localStorage.getItem("user");
+          let isAdmin = false;
+          if (user) {
+            try {
+              const parsed = JSON.parse(user);
+              if (parsed.role && parsed.role === "Admin") isAdmin = true;
+              if (parsed.roles && Array.isArray(parsed.roles) && parsed.roles.includes("Admin")) isAdmin = true;
+            } catch {}
+          }
+          if (isAdmin) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
+        } else {
+          const errorMsg = result.message || "Login failed. Please try again.";
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
+        }
+      } else {
+        // Handle register - first step: send OTP
+        const result = await authService.register({
+          fullname: values.fullname,
+          email: values.email,
+          password: values.password,
+        });
+
+        if (result.success) {
+          console.log('Registration OTP sent:', result.message);
+          toast.success(result.message);
+          setPendingUserData(values);
+          setUserEmail(values.email);
+          setShowOTP(true);
+        } else {
+          const errorMsg = result.message || "Registration failed. Please try again.";
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
+        }
+      }
+    } catch (error) {
+      const errorMsg = "Network error. Please check your connection and try again.";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleOTPSuccess = (data) => {
+    // Update auth state in context
+    updateAuthState(true);
+    toast.success("Registration successful!");
+    navigate("/"); // Redirect to home page
+  };
+
+  const handleOTPBack = () => {
+    setShowOTP(false);
+    setPendingUserData(null);
+    setUserEmail("");
+  };
+
+  const handleForgotPasswordClick = () => {
+    setShowForgotPassword(true);
+  };
+
+  const handleForgotPasswordBack = () => {
+    setShowForgotPassword(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+      <Link className="sm:mx-auto sm:w-full sm:max-w-md"  to="/">
         <img
           className="mx-auto h-12 w-auto"
           src="img/logo.png"
           alt="Your Company"
         />
-      </div>
+      </Link>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {/* Tabs */}
-          <div className="flex border-b border-gray-200 mb-8">
-            <button
-              className={`flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm ${
-                activeTab === "login"
-                  ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-              onClick={() => setActiveTab("login")}
-            >
-              Sign in
-            </button>
-            <button
-              className={`flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm ${
-                activeTab === "register"
-                  ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-              onClick={() => setActiveTab("register")}
-            >
-              Register
-            </button>
-          </div>
+          {showOTP ? (
+            <OTPVerification
+              email={userEmail}
+              type="register"
+              userData={pendingUserData}
+              onSuccess={handleOTPSuccess}
+              onBack={handleOTPBack}
+            />
+          ) : showForgotPassword ? (
+            <ForgotPassword onBack={handleForgotPasswordBack} />
+          ) : (
+            <>
+              {/* Tabs */}
+              <div className="flex border-b border-gray-200 mb-8">
+                <button
+                  className={`flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                    activeTab === "login"
+                      ? "border-orange-500 text-orange-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("login");
+                    setErrorMessage(""); // Clear error when switching tabs
+                  }}
+                >
+                  Sign in
+                </button>
+                <button
+                  className={`flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                    activeTab === "register"
+                      ? "border-orange-500 text-orange-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("register");
+                    setErrorMessage(""); // Clear error when switching tabs
+                  }}
+                >
+                  Register
+                </button>
+              </div>
 
-          {/* Form */}
-          <Form
-            name="auth"
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            layout="vertical"
-            className="space-y-4"
-          >
+              {/* Error Alert */}
+              {/* {errorMessage && (
+                <Alert
+                  message={errorMessage}
+                  type="error"
+                  closable
+                  onClose={() => setErrorMessage("")}
+                  className="mb-4 important"
+                />
+              )} */}
+
+              {/* Form */}
+              <Form
+                key={activeTab} // Force re-render when tab changes
+                name={`auth-${activeTab}`}
+                initialValues={{ remember: true }}
+                onFinish={onFinish}
+                layout="vertical"
+                className="space-y-4"
+                validateTrigger="onBlur" // Validate on blur instead of onChange
+              >
             {activeTab === "register" && (
               <Form.Item
-                name="username"
+                name="fullname"
                 rules={[
-                  { required: true, message: "Please input your username!" },
+                  { required: true, message: "Please input your full name!" },
                   {
                     min: 3,
-                    message: "Username must be at least 3 characters!",
+                    message: "Full name must be at least 3 characters!",
                   },
                 ]}
               >
                 <div>
-                  <Typography.Title level={5}>Username</Typography.Title>
+                  <Typography.Title level={5}>Full Name</Typography.Title>
                   <Input
                     prefix={<UserOutlined />}
-                    placeholder="Enter your username"
+                    placeholder="Enter your full name"
                     size="large"
                   />
                 </div>
@@ -127,15 +236,18 @@ function Auth() {
               </div>
             </Form.Item>
 
-            <Form.Item name="password" rules={passwordRules}>
+            <Form.Item 
+              name="password" 
+              rules={activeTab === "login" ? loginPasswordRules : passwordRules}
+            >
               <div>
-                <Typography.Title level={5}>New Password</Typography.Title>
+                <Typography.Title level={5}>
+                  {activeTab === "login" ? "Password" : "New Password"}
+                </Typography.Title>
                 <Input.Password
                   prefix={<LockOutlined />}
-                  placeholder="Enter new password"
+                  placeholder={activeTab === "login" ? "Enter your password" : "Enter new password"}
                   size="large"
-                  validateFirst
-                  rules={passwordRules}
                 />
               </div>
             </Form.Item>
@@ -173,23 +285,26 @@ function Auth() {
 
             {activeTab === "login" && (
               <Form.Item>
-                <Flex justify="space-between" align="center">
-                  <Form.Item name="remember" valuePropName="checked" noStyle>
-                    <Checkbox>Remember me</Checkbox>
-                  </Form.Item>
-                  <a href="#" className="text-orange-600 hover:text-orange-500">
+                <div className="text-center">
+                  <button
+                    type="button"
+                    cursor="pointer"
+                    onClick={handleForgotPasswordClick}
+                    className="text-orange-600 hover:text-orange-500"
+                  >
                     Forgot password?
-                  </a>
-                </Flex>
+                  </button>
+                </div>
               </Form.Item>
             )}
 
             <Form.Item>
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-md border border-transparent bg-orange-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                disabled={loading}
+                className="flex w-full justify-center rounded-md border border-transparent bg-orange-600 mt-2 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
               >
-                {activeTab === "login" ? "Sign in" : "Register"}
+                {loading ? "Loading..." : (activeTab === "login" ? "Sign in" : "Register")}
               </button>
             </Form.Item>
           </Form>
@@ -225,8 +340,24 @@ function Auth() {
               </div>
             </div>
           )}
+            </>
+          )}
         </div>
       </div>
+      
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 }
