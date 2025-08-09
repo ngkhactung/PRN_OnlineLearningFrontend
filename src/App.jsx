@@ -21,12 +21,6 @@ import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import Courses from "./pages/Courses.jsx";
 import CourseDetails from "./pages/CourseDetails.jsx";
-<<<<<<< HEAD
-import ManaCourse from "./pages/admin/ManaCourse.jsx";
-import AddCourse from "./pages/admin/AddCourse.jsx";
-import EditCourse from "./pages/admin/EditCourse.jsx";
-function App() {
-=======
 import Contact from "./pages/Contact.jsx";
 
 // 👤 User Pages
@@ -89,7 +83,6 @@ function AppContent() {
     setAuthContextUpdate(updateAuthState);
   }, [updateAuthState]);
 
->>>>>>> dev
   return (
     <BrowserRouter>
       <Toaster position="top-right"
@@ -127,14 +120,6 @@ function AppContent() {
 
         {/* Auth routes */}
         <Route path="/auth" element={<Auth />} />
-<<<<<<< HEAD
-        <Route path="/about" element={<About />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/courseDetail" element={<CourseDetails />} />
-        <Route path="/manaCourse" element={<ManaCourse />} />
-        <Route path="/manaCourses/add" element={<AddCourse />} />
-        <Route path="/manaCourses/edit/:id" element={<EditCourse />} />
-=======
         <Route path="/access-denied" element={<AccessDenied />} />
 
         {/* 👑 Admin routes */}
@@ -155,7 +140,6 @@ function AppContent() {
             <Route path="settings" element={<div>Cài đặt - Coming soon</div>} />
           </Route>
         </Route>
->>>>>>> dev
       </Routes>
     </BrowserRouter>
   );

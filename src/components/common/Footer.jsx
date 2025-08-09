@@ -9,27 +9,8 @@ function Footer() {
           {/* Logo and Description Section */}
           <div className="space-y-4">
             <div>
-<<<<<<< HEAD
-              <a href="/" className="flex items-center">
-                <img
-                  src="/img/logo.png" // Vite root-relative path
-                  alt="Logo"
-                  className="h-12"
-                  onError={(e) => {
-                    console.error("Logo load failed:", {
-                      error: e,
-                      src: e.target.src,
-                      currentSrc: e.target.currentSrc,
-                      baseURI: document.baseURI,
-                    }); // Detailed logging
-                    e.target.src = "https://via.placeholder.com/150"; // Fallback
-                  }}
-                  onLoad={() => console.log("Logo loaded successfully:", document.baseURI)} // Confirm load
-                />
-=======
               <a href="index.html">
                 <img src={logo} alt="Logo" className="h-12" />
->>>>>>> dev
               </a>
             </div>
             <p className="text-gray-600">
