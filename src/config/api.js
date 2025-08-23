@@ -13,6 +13,8 @@ export const API_CONFIG = {
       VERIFY_FORGOT_PASSWORD: '/Auth/VerifyForgotPassword',
       CHANGE_PASSWORD: '/Auth/ChangePassword',
       SEND_OTP: '/Auth/SendOtp',
+      GET_LOGIN_URL: '/Auth/GetLoginUrl',
+      LOGIN_CALLBACK: '/Auth/LoginCallback',
     },
     COURSES: {
       GET_ALL: '/Courses',
