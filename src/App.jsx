@@ -17,6 +17,9 @@ import AdminLayout from "./components/admin/AdminLayout.jsx";
 // 📄 Common Pages
 import Auth from "./pages/auth/Auth.jsx";
 import AccessDenied from "./pages/auth/AccessDenied.jsx";
+import GoogleCallback from "./components/auth/GoogleCallback.jsx";
+import FacebookCallback from "./components/auth/FacebookCallback.jsx";
+import MicrosoftCallback from "./components/auth/MicrosoftCallback.jsx";
 import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import Courses from "./pages/Courses.jsx";
@@ -120,6 +123,9 @@ function AppContent() {
 
         {/* Auth routes */}
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
+        <Route path="/auth/facebook/callback" element={<FacebookCallback />} />
+        <Route path="/auth/microsoft/callback" element={<MicrosoftCallback />} />
         <Route path="/access-denied" element={<AccessDenied />} />
 
         {/* 👑 Admin routes */}

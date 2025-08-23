@@ -13,6 +13,12 @@ export const UserRole = {
     ADMIN: "Admin"
 };
 
+export const ExternalLoginType = {
+    GOOGLE: 1,
+    FACEBOOK: 2,
+    MICROSOFT: 3
+};
+
 export const getUserStatusText = (status) => {
     switch (status) {
         case UserStatus.ACTIVE:
